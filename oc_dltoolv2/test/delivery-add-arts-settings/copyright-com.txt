@@ -1,0 +1,2 @@
+COPYRIGHT
+This is test copyright text.

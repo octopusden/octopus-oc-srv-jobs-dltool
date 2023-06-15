@@ -1,0 +1,14 @@
+{
+    "com":{
+        "denied":[
+            "^com\\.example\\.ext\\.documentation:[^:]+-(en|ru):[^:]+:[^:]+(:[^:]+)*$"
+        ],
+        "copyright": "copyright-com.txt"
+    },
+    "org":{
+        "denied":[
+            "^com\\.example\\.ext\\.documentation:[^:]+-(english|russian):[^:]+:[^:]+(:[^:]+)*$"
+        ],
+        "copyright": "copyright-org.txt"
+    }
+}

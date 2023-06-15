@@ -1,0 +1,2 @@
+class DeliveryDeniedException(Exception):
+    pass
