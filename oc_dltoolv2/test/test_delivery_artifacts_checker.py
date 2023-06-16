@@ -1,4 +1,4 @@
-import mock
+from unittest import mock
 import django
 from django import test
 from . import django_settings

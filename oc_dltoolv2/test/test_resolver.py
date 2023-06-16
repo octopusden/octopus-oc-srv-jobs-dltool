@@ -14,7 +14,7 @@ from fs.memoryfs import MemoryFS
 from oc_dltoolv2.resolver import BuildRequestResolver, ResolutionError
 from oc_dltoolv2.resources import RequestContext
 
-import mock
+from unittest import mock
 
 class TestFS(MemoryFS):
 

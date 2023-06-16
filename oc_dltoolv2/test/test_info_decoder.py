@@ -11,7 +11,7 @@ from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
 from io import BytesIO
 from copy import deepcopy
 import os
-import mock
+from unittest import mock
 
 _environ = {
     'CLIENT_PROVIDER_URL': 'http://test-client-provider',
