@@ -1,7 +1,7 @@
 from . import django_settings
 import django
 from django import test
-from mock import patch
+from unittest.mock import patch
 from io import BytesIO
 from oc_delivery_apps.checksums.models import CiTypes, CsTypes, LocTypes, CiRegExp
 from oc_dltoolv2.build_steps import calculate_and_check_checksums

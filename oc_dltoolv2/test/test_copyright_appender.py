@@ -3,7 +3,7 @@ from django import test
 import django
 import fs
 import os
-import mock
+from unittest import mock
 from oc_dltoolv2.delivery_copyright_appender import DeliveryCopyrightAppender
 from oc_dltoolv2.test.mocks import mocked_requests
 

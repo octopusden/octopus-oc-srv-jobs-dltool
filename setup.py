@@ -15,13 +15,14 @@ def list_recursive(app, directory, extension="*"):
 
 included_packages = ["oc_dltoolv2"]
 
-__version = '3.10.3'
+__version = '3.10.4'
 
 spec = { "name": "oc-dltool",
          "version": __version,
          "description": "Includes tools for delivery build and release",
          "long_description": "",
          "long_description_content_type": "text/plain",
+         "python_requires": ">=3.6",
          "install_requires": [
            "oc-checksumsq",
            "oc-connections",
@@ -33,7 +34,6 @@ spec = { "name": "oc-dltool",
            "oc-mailer",
            "oc-sql-helpers",
            "requests",
-           "mock",
            "coverage",
            "django",
            "django_tests"

@@ -1,7 +1,7 @@
 from django import test
 import django
 from . import django_settings
-import mock
+from unittest import mock
 from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
 from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
 from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub

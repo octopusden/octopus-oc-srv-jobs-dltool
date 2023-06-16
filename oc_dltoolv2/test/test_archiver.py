@@ -10,7 +10,7 @@ from oc_dltoolv2.archiver import DeliveryArchiver, ArchivationError
 from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
 
 from oc_dltoolv2.test.mocks import mocked_requests
-import mock
+from unittest import mock
 import os
 import django
 
