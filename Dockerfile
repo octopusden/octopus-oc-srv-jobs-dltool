@@ -4,10 +4,19 @@ FROM debian:${DEBIAN_RELEASE}
 ARG PYTHON_MAJOR_VERSION="3"
 ENV PYTHON_INTERPRETER="python${PYTHON_MAJOR_VERSION}"
 USER root
+
+# "psycopg2" will not be installed correctly without 'libpq-dev' and 'build-essential'
+
 RUN apt-get --quiet --assume-yes update && \
-    apt-get --quiet --assume-yes install ${PYTHON_INTERPRETER}-pysvn ${PYTHON_INTERPRETER}-pip && \
+    apt-get --no-install-recommends --quiet --assume-yes install \
+        ${PYTHON_INTERPRETER}-pysvn \
+        ${PYTHON_INTERPRETER}-pip \
+        ${PYTHON_INTERPRETER}-dev \
+        libpq-dev \
+        build-essential && \
     ${PYTHON_INTERPRETER} -m pip install --upgrade pip && \
     ${PYTHON_INTERPRETER} -m pip install --upgrade setuptools wheel
+
 RUN rm -rf /build
 COPY --chown=root:root . /build
 WORKDIR /build
