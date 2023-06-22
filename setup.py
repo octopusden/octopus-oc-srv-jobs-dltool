@@ -21,9 +21,7 @@ spec = { "name": "oc-dltool",
            "oc-orm-initializator",
            "oc-mailer",
            "oc-sql-helpers",
-           "requests",
-           "django",
-           "django_tests"
+           "requests"
          ],
          "packages": included_packages,
          "python_requires": ">=3.6"
