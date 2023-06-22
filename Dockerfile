@@ -1,27 +1,24 @@
-ARG DEBIAN_RELEASE="bullseye"
-FROM debian:${DEBIAN_RELEASE}
+FROM debian:bullseye
 
-ARG PYTHON_MAJOR_VERSION="3"
-ENV PYTHON_INTERPRETER="python${PYTHON_MAJOR_VERSION}"
 USER root
 
 # "psycopg2" will not be installed correctly without 'libpq-dev' and 'build-essential'
 
 RUN apt-get --quiet --assume-yes update && \
     apt-get --no-install-recommends --quiet --assume-yes install \
-        ${PYTHON_INTERPRETER}-pysvn \
-        ${PYTHON_INTERPRETER}-pip \
-        ${PYTHON_INTERPRETER}-dev \
+        python3-pysvn \
+        python3-pip \
+        python3-dev \
         libpq-dev \
         build-essential \
         libmagic1 && \
-    ${PYTHON_INTERPRETER} -m pip install --upgrade pip && \
-    ${PYTHON_INTERPRETER} -m pip install --upgrade setuptools wheel
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install --upgrade setuptools wheel
 
 RUN rm -rf /build
 COPY --chown=root:root . /build
 WORKDIR /build
-RUN ${PYTHON_INTERPRETER} -m pip install $(pwd) && \
-    ${PYTHON_INTERPRETER} -m unittest discover -v && \
-    ${PYTHON_INTERPRETER} setup.py bdist_wheel
-ENTRYPOINT ["env", "${PYTHON_INTERPRETER}", "-m", "oc_dltoolv2"]
+RUN python3 -m pip install $(pwd) && \
+    python3 -m unittest discover -v && \
+    python3 setup.py bdist_wheel
+ENTRYPOINT ["env", "python3", "-m", "oc_dltoolv2"]

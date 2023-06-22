@@ -336,5 +336,5 @@ class WrappingTestSuite(django.test.TransactionTestCase):
 
 class MockWrapper(object):
 
-    def wrap_file(self, fs, file_path):
-        fs.writetext(file_path, "wrapped")
+    def wrap_path(self, path):
+        return b"wrapped"

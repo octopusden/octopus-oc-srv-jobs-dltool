@@ -7,7 +7,6 @@ from itertools import filterfalse as ifilterfalse
 from fs.errors import ResourceNotFound
 from fs.tempfs import TempFS
 
-from oc_dltoolv2.SqlWrapper import WrappingError
 from oc_dltoolv2.resources import ResourceData, DeliveryResource
 
 
@@ -52,11 +51,8 @@ class Wrapper(object):
         return selected, skipped
 
     def _wrap_resource(self, resource):
-        try:
-            wrapped_data = WrappedResourceData(resource.resource_data, self._wrap_client)
-        except WrappingError:
-            logging.exception("Wrapping failed for %s" % resource.location_stub.path)
-            raise
+        # there may be an exception - raise it then
+        wrapped_data = WrappedResourceData(resource.resource_data, self._wrap_client)
         # wrapping is transparent - location_stub still points to svn
         wrapped_resource = DeliveryResource(resource.location_stub, wrapped_data)
         return wrapped_resource
@@ -121,9 +117,8 @@ class WrappedResourceData(ResourceData):
     def _wrap_data(self, data, wrap_client):
         with TempFS() as temp_fs:
             with data.get_content() as content_handle:
-                temp_fs.upload("filename", content_handle)
-                wrap_client.wrap_file(temp_fs, "filename")
-                wrapped_content = temp_fs.readbytes("filename")
+                temp_fs.upload("_f.sql", content_handle)
+                wrapped_content = wrap_client.wrap_path(temp_fs.getsyspath("_f.sql"))
         return wrapped_content
 
     def get_content(self):
