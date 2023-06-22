@@ -13,7 +13,8 @@ RUN apt-get --quiet --assume-yes update && \
         ${PYTHON_INTERPRETER}-pip \
         ${PYTHON_INTERPRETER}-dev \
         libpq-dev \
-        build-essential && \
+        build-essential \
+        libmagic1 && \
     ${PYTHON_INTERPRETER} -m pip install --upgrade pip && \
     ${PYTHON_INTERPRETER} -m pip install --upgrade setuptools wheel
 
