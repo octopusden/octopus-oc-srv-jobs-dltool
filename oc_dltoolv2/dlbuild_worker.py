@@ -1,21 +1,22 @@
 import logging
 import os
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueServer
-from .build_delivery_from_queue import BuildProcess
 
 
 class DLBuildWorker(DLBuildQueueServer):
 
     def __init__(self, *args, **kwargs):
-        self._kwargs = kwargs
+        self._kwargs = kwargs.copy()
+        kwargs.pop('setup_orm', False)
+        kwargs.pop('conn_mgr', None)
         super().__init__(*args, **kwargs)
 
     @property
     def build_process(self):
-
         if not hasattr('_build_process', self):
             api_check_enabled = (os.getenv("DISTRIBUTIVES_API_CHECK_ENABLED", 'false').lower() in ["true", "yes"])
             logging.info("API check enabled: %s" % api_check_enabled)
+            from .build_delivery_from_queue import BuildProcess
             self._build_process = BuildProcess(api_check=api_check_enabled, **self._kwargs)
 
         return self._build_process
