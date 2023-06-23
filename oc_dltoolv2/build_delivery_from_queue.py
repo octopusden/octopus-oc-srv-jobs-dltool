@@ -7,10 +7,8 @@ from collections import namedtuple
 from oc_cdtapi.NexusAPI import parse_gav
 from oc_connections.ConnectionManager import ConnectionManager
 
-#from cdt.connections.ORMConfigurator import configure_django_orm
 from oc_orm_initializator.orm_initializator import OrmInitializator
 from oc_checksumsq.checksums_interface import ChecksumsQueueClient
-from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
 from fs.tempfs import TempFS
 
 import oc_dltoolv2.DeliveryChannels as DeliveryChannels
@@ -19,6 +17,7 @@ from oc_dltoolv2.notifications import AutoSetupNotificator
 from oc_dltoolv2.distributives_api_client import DistributivesAPIClient
 
 from oc_dltoolv2.delivery_artifacts_checker import DeliveryArtifactsChecker
+from oc_delivery_apps.dlmanager.DLModels import InvalidPathError
 
 
 class BuildProcess(object):
@@ -39,6 +38,10 @@ class BuildProcess(object):
             #configure_django_orm(self.conn_mgr, INSTALLED_APPS=[
             #    "dlmanager", "django.contrib.auth", "django.contrib.contenttypes"])
             OrmInitializator(installed_apps = ['dlmanager'])
+        
+        # django models can be imported if django is configured only, so make it here
+        from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
+        self._DeliveryList = DeliveryList
 
     def get_target_delivery_params(self, tag):
         """ Retrieve delivery params from delivery tag
@@ -56,8 +59,8 @@ class BuildProcess(object):
         :param delivery_params: parsed params from url or tag
         """
         try:
-            # originated from delivery_info.txt in SVN tag. DeliveryList is a django-ORM model
-            delivery_list = DeliveryList(
+            # originated from delivery_info.txt in SVN tag. self._DeliveryList is a django-ORM model
+            delivery_list = self._DeliveryList(
                 delivery_params["mf_delivery_files_specified"])
         except InvalidPathError as ipe:
             raise BuildError("Invalid path in delivery list: " + str(ipe))
