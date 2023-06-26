@@ -44,7 +44,7 @@ class BuildProcess(object):
         
         # django models can be imported if django is configured only, so make it here
         from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
-        import .DeliveryChannels as DeliveryChannels
+        from . import DeliveryChannels
         self._DeliveryList = DeliveryList
         self._InvalidPathError = InvalidPathError
         self._DeliveryChannels = DeliveryChannels
