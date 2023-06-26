@@ -13,7 +13,7 @@ class DLBuildWorker(DLBuildQueueServer):
 
     @property
     def build_process(self):
-        if not hasattr('_build_process', self):
+        if not hasattr(self, '_build_process'):
             api_check_enabled = (os.getenv("DISTRIBUTIVES_API_CHECK_ENABLED", 'false').lower() in ["true", "yes"])
             logging.info("API check enabled: %s" % api_check_enabled)
             from .build_delivery_from_queue import BuildProcess
