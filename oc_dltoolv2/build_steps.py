@@ -5,12 +5,12 @@ from fs import copy as fs_copy
 from fs.tempfs import TempFS
 
 from oc_sql_helpers.wrapper import PLSQLWrapper
-from oc_dltoolv2.archiver import DeliveryArchiver
-from oc_dltoolv2.local_load import download_resource
-from oc_dltoolv2.resolver import BuildRequestResolver
-from oc_dltoolv2.resources import RequestContext
-from oc_dltoolv2.wrapper import Wrapper
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
+from .archiver import DeliveryArchiver
+from .local_load import download_resource
+from .resolver import BuildRequestResolver
+from .resources import RequestContext
+from .wrapper import Wrapper
+from .delivery_exceptions import DeliveryDeniedException
 from hashlib import md5
 import logging
 

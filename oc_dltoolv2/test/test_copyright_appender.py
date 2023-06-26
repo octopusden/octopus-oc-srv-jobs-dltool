@@ -4,8 +4,8 @@ import django
 import fs
 import os
 from unittest import mock
-from oc_dltoolv2.delivery_copyright_appender import DeliveryCopyrightAppender
-from oc_dltoolv2.test.mocks import mocked_requests
+from ..delivery_copyright_appender import DeliveryCopyrightAppender
+from .mocks import mocked_requests
 
 _environ = {
     'CLIENT_PROVIDER_URL': 'http://test-client-provider',

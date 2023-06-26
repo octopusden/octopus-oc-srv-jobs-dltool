@@ -9,8 +9,8 @@ from django import test
 from fs.memoryfs import MemoryFS
 from fs.zipfs import ZipFS
 
-from oc_dltoolv2.register import register_delivery_content, register_delivery_resource, RegisterError
-from oc_dltoolv2.resources import DeliveryResource, LocationStub, ResourceData
+from ..register import register_delivery_content, register_delivery_resource, RegisterError
+from ..resources import DeliveryResource, LocationStub, ResourceData
 
 import django
 

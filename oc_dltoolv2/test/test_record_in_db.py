@@ -2,7 +2,7 @@ from . import django_settings
 from configobj import ConfigObj
 from django import test
 from oc_delivery_apps.dlmanager.models import Delivery
-from oc_dltoolv2.db_steps import delivery_is_in_db
+from ..db_steps import delivery_is_in_db
 import django
 
 

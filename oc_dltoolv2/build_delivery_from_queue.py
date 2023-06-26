@@ -1,6 +1,5 @@
 import argparse
 import logging
-import traceback
 import os
 from collections import namedtuple
 
@@ -11,13 +10,11 @@ from oc_orm_initializator.orm_initializator import OrmInitializator
 from oc_checksumsq.checksums_interface import ChecksumsQueueClient
 from fs.tempfs import TempFS
 
-import oc_dltoolv2.DeliveryChannels as DeliveryChannels
-from oc_dltoolv2.errors import BuildError
-from oc_dltoolv2.notifications import AutoSetupNotificator
-from oc_dltoolv2.distributives_api_client import DistributivesAPIClient
+from .errors import BuildError
+from .notifications import AutoSetupNotificator
+from .distributives_api_client import DistributivesAPIClient
 
-from oc_dltoolv2.delivery_artifacts_checker import DeliveryArtifactsChecker
-from oc_delivery_apps.dlmanager.DLModels import InvalidPathError
+from .delivery_artifacts_checker import DeliveryArtifactsChecker
 
 
 class BuildProcess(object):
@@ -35,20 +32,29 @@ class BuildProcess(object):
         # self.registration_client.basic_args(self.parser)  # add AMQP-specific arguments
 
         if self.setup_orm:
-            #configure_django_orm(self.conn_mgr, INSTALLED_APPS=[
-            #    "dlmanager", "django.contrib.auth", "django.contrib.contenttypes"])
-            OrmInitializator(installed_apps = ['dlmanager'])
+            _c = {"PSQL_URL": None, "PSQL_USER": None, "PSQL_PASSWORD": None}
+
+            for _k in _c.keys():
+                _c[_k] = kvargs.pop(_k.lower(), "") or os.getenv(_k, "")
+
+                if not _c[_k]:
+                    raise ValueError("'%s' is mandatory" % _k)
+
+            OrmInitializator(url=_c.get("PSQL_URL"), user=_c.get("PSQL_USER"), password=_c.get("PSQL_PASSWORD"), installed_apps = ['oc_delivery_apps.dlmanager'])
         
         # django models can be imported if django is configured only, so make it here
         from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
+        import .DeliveryChannels as DeliveryChannels
         self._DeliveryList = DeliveryList
+        self._InvalidPathError = InvalidPathError
+        self._DeliveryChannels = DeliveryChannels
 
     def get_target_delivery_params(self, tag):
         """ Retrieve delivery params from delivery tag
         :param tag: URL of tag to read
         :return: dict of delivery attributes (keys are equal to db model fields) """
         clients_repo = self.conn_mgr.get_url("SVN_CLIENTS")
-        channel = DeliveryChannels.SvnDeliveryChannel(
+        channel = self._DeliveryChannels.SvnDeliveryChannel(
             clients_repo, self.conn_mgr.get_svn_client("SVN"))
         delivery_params = channel.read_delivery_at_branch(tag)
         return delivery_params
@@ -62,15 +68,15 @@ class BuildProcess(object):
             # originated from delivery_info.txt in SVN tag. self._DeliveryList is a django-ORM model
             delivery_list = self._DeliveryList(
                 delivery_params["mf_delivery_files_specified"])
-        except InvalidPathError as ipe:
+        except self._InvalidPathError as ipe:
             raise BuildError("Invalid path in delivery list: " + str(ipe))
         gav_str = "%s:%s:%s:zip" % tuple(
             delivery_params[key] for key in  # GAV gets created in Delivery Wizard and saved to delivery_info.txt
             ["groupid", "artifactid", "version"])
         gav = parse_gav(gav_str)
 
-        from build_steps import BuildContext, collect_sources, calculate_and_check_checksums, build_delivery, upload_delivery
-        from db_steps import save_delivery_to_db, delivery_is_in_db
+        from .build_steps import BuildContext, collect_sources, calculate_and_check_checksums, build_delivery, upload_delivery
+        from .db_steps import save_delivery_to_db, delivery_is_in_db
 
         if delivery_is_in_db(delivery_params):
             return ProcessStatus("build_process", "WARNING", "Delivery already built and stored in DB", None)
@@ -115,7 +121,7 @@ class BuildProcess(object):
             registration_process_res = self.build_process(delivery_params)
             build_exception = None
         except Exception as exc:
-            traceback.print_exc()
+            logging.exception(exc)
             build_exception = exc
 
         notify_res = self.notify_client(delivery_params, build_exception)
@@ -128,7 +134,7 @@ class BuildProcess(object):
             return build_res
 
     def registration_process(self, delivery, resources, workdir_fs, archive_path, gav, checksums_list):
-        from register import register_delivery_content, register_delivery_resource
+        from .register import register_delivery_content, register_delivery_resource
         registration_client = ChecksumsQueueClient()
         parser = argparse.ArgumentParser(
             description="This script launches build process for delivery specified by groupid:artifactid:version")

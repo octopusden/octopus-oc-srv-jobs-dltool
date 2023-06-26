@@ -11,8 +11,8 @@ from fs.errors import DirectoryExists
 from fs.info import Info
 from fs.memoryfs import MemoryFS
 
-from oc_dltoolv2.resolver import BuildRequestResolver, ResolutionError
-from oc_dltoolv2.resources import RequestContext
+from ..resolver import BuildRequestResolver, ResolutionError
+from ..resources import RequestContext
 
 from unittest import mock
 

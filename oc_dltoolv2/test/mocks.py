@@ -1,6 +1,6 @@
 import json
 from fs.memoryfs import MemoryFS
-from oc_dltoolv2.dlbuild_worker import DLBuildWorker
+from ..dlbuild_worker import DLBuildWorker
 from oc_cdt_queue2.test.synchron.mocks.queue_application import QueueApplication
 import posixpath
 

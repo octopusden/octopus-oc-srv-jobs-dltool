@@ -1,7 +1,7 @@
 import logging
 import re
-from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
+from .delivery_info_helper import DeliveryInfoHelper
+from .delivery_exceptions import DeliveryDeniedException
 
 class DeliveryArtifactsChecker(DeliveryInfoHelper):
     def check_artifacts_included(self, delivery_resources):

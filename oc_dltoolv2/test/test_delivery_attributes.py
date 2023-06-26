@@ -1,8 +1,8 @@
 import unittest
 from datetime import datetime
 
-from oc_dltoolv2 import delivery_attributes
-from oc_dltoolv2.DeliveryValidations import ValidationException
+from .. import delivery_attributes
+from ..DeliveryValidations import ValidationException
 
 
 class DeliveryAttributesGenerationTestSuite(unittest.TestCase):

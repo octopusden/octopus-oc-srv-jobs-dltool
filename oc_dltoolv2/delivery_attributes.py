@@ -1,6 +1,6 @@
 import os
 from logging import debug
-from oc_dltoolv2 import DeliveryValidations
+from . import DeliveryValidations
 
 
 def generate_version(timestamp, minor=None):

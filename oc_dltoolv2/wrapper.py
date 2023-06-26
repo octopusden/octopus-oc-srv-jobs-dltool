@@ -7,7 +7,7 @@ from itertools import filterfalse as ifilterfalse
 from fs.errors import ResourceNotFound
 from fs.tempfs import TempFS
 
-from oc_dltoolv2.resources import ResourceData, DeliveryResource
+from .resources import ResourceData, DeliveryResource
 
 
 

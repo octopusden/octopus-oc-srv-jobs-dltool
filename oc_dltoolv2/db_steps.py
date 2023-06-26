@@ -4,7 +4,7 @@ from oc_delivery_apps.dlmanager.models import Delivery
 import logging
 
 
-from oc_dltoolv2.errors import BuildError
+from .errors import BuildError
 
 
 def delivery_is_in_db(delivery_params):

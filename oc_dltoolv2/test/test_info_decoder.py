@@ -1,13 +1,13 @@
 from django import test
 from . import django_settings
-from oc_dltoolv2.delivery_info_decoder import DeliveryInfoDecoder
+from ..delivery_info_decoder import DeliveryInfoDecoder
 from fs.tempfs import TempFS
 import json
 import random
 import string
 import django
 from oc_delivery_apps.checksums.models import LocTypes, CiTypes
-from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
+from ..resources import ResourceData, DeliveryResource, LocationStub
 from io import BytesIO
 from copy import deepcopy
 import os

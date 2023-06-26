@@ -1,6 +1,6 @@
 import logging
 import os
-from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
+from .delivery_info_helper import DeliveryInfoHelper
 import fs
 
 class DeliveryCopyrightAppender(DeliveryInfoHelper):

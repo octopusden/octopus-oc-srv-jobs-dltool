@@ -9,8 +9,8 @@ from oc_delivery_apps.checksums.models import CiTypes, LocTypes, Locations
 from oc_delivery_apps.dlmanager.DLModels import DeliveryList
 from oc_delivery_apps.dlmanager.models import PrivateFile
 
-from oc_dltoolv2.enhancements import ReleasenotesEnhancement
-from oc_dltoolv2.resources import FSLocation, FileBasedResourceData, DeliveryResource, LocationStub
+from .enhancements import ReleasenotesEnhancement
+from .resources import FSLocation, FileBasedResourceData, DeliveryResource, LocationStub
 
 
 class BuildRequestResolver(object):
