@@ -3,7 +3,7 @@ from collections import namedtuple
 
 from oc_cdtapi import NexusAPI
 
-from .notifications import Notificator
+from ..notifications import Notificator
 
 MockMailEntry = namedtuple("MockMailEntry", ("recipient", "subject", "text"))
 
