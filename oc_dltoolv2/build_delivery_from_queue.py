@@ -40,7 +40,11 @@ class BuildProcess(object):
                 if not _c[_k]:
                     raise ValueError("'%s' is mandatory" % _k)
 
-            OrmInitializator(url=_c.get("PSQL_URL"), user=_c.get("PSQL_USER"), password=_c.get("PSQL_PASSWORD"), installed_apps = ['oc_delivery_apps.dlmanager'])
+            _installed_apps = [
+                    'oc_delivery_apps.dlmanager',
+                    'oc_delivery_apps.checksums']
+
+            OrmInitializator(url=_c.get("PSQL_URL"), user=_c.get("PSQL_USER"), password=_c.get("PSQL_PASSWORD"), installed_apps=_installed_apps)
         
         # django models can be imported if django is configured only, so make it here
         from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
