@@ -30,7 +30,7 @@ class DeliveryArtifactsChecker(DeliveryInfoHelper):
         _customer_loc = self._get_customer_location(_customer_code)
 
         if not _customer_loc:
-            logging.warning("Customer '%s' does not have location tag. Artifacts check skipped")
+            logging.warning("Customer '%s' does not have location tag. Artifacts check skipped" % _customer_code)
             return True
 
         _artifacts_necessary, _artifacts_denied = self._get_artifacts_lineup(_customer_loc)
