@@ -6,7 +6,7 @@ from oc_cdtapi.NexusAPI import parse_gav
 from oc_connections.ConnectionManager import ConnectionManager
 
 from oc_orm_initializator.orm_initializator import OrmInitializator
-from oc_checksumsq.checksums_interface import ChecksumsQueueClient
+import oc_checksumsq.checksums_interface
 from fs.tempfs import TempFS
 
 from .errors import BuildError
@@ -142,8 +142,14 @@ class BuildProcess(object):
 
     def registration_process(self, delivery, resources, workdir_fs, archive_path, gav, checksums_list):
         from .register import register_delivery_content, register_delivery_resource
-        registration_client = ChecksumsQueueClient()
-        registration_client.setup(priority=3)
+        registration_client = oc_checksumsq.checksums_interface.ChecksumsQueueClient()
+        registration_client.setup(
+                url=os.getenv("AMQP_URL"),
+                username=os.getenv("AMQP_USER"),
+                password=os.getenv("AMQP_PASSWORD"),
+                routing_key=oc_checksumsq.checksums_interface.queue_name,
+                queue_cnt=oc_checksumsq.checksums_interface.queue_cnt_name,
+                priority=3)
         try:
             registration_client.connect()  # should be called just before sending message
             for resource in resources:
