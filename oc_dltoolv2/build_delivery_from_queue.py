@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 from collections import namedtuple
@@ -83,7 +82,9 @@ class BuildProcess(object):
         from .db_steps import save_delivery_to_db, delivery_is_in_db
 
         if delivery_is_in_db(delivery_params):
+            logging.info("Delivery is in DB already")
             return ProcessStatus("build_process", "WARNING", "Delivery already built and stored in DB", None)
+
         # exceptions at single steps are not processed - they should stop build process
         with TempFS(temp_dir=".") as workdir_fs:
             # BuildContext is just a NamedTuple that has workdir_fs and conn_mgr
@@ -101,14 +102,15 @@ class BuildProcess(object):
             archive_path = build_delivery(resources, delivery_params, context)
             upload_delivery(archive_path, gav, context)
             delivery = save_delivery_to_db(delivery_params, resources, context)
-            logging.debug("Delivery was saved to database: " + delivery.gav)
+            logging.debug("Delivery was saved to database, GAV: '%s'" % delivery.gav)
 
             # even if checksums registration will fail, delivery will still be created
             registration_process_res = self.registration_process(
                     delivery, resources, workdir_fs, archive_path, gav, checksums_list)
-            return registration_process_res
 
-            # return (mail_result, reg_result)
+            logging.debug("Registration process done")
+
+            return registration_process_res
 
     def build_delivery_from_tag(self, requested_tag=None):
 
@@ -130,35 +132,30 @@ class BuildProcess(object):
 
         notify_res = self.notify_client(delivery_params, build_exception)
         build_res = [registration_process_res, notify_res]
+
         if build_exception:
             logging.error("Build failed for tag %s" % requested_tag)
             raise build_exception
-        else:
-            logging.info("Build successful for tag %s" % requested_tag)
-            return build_res
+        
+        logging.info("Build successful for tag %s" % requested_tag)
+        return build_res
 
     def registration_process(self, delivery, resources, workdir_fs, archive_path, gav, checksums_list):
         from .register import register_delivery_content, register_delivery_resource
         registration_client = ChecksumsQueueClient()
-        parser = argparse.ArgumentParser(
-            description="This script launches build process for delivery specified by groupid:artifactid:version")
-        default_args = registration_client.basic_args(parser).parse_args()
-        default_args.exchange = self.amqp_exchange
-        # Set max priority for messages from dltool
-        default_args.priority = 3
-        registration_client.setup_from_args(default_args)
+        registration_client.setup(priority=3)
         try:
             registration_client.connect()  # should be called just before sending message
             for resource in resources:
                 register_delivery_resource(resource, registration_client, checksums_list)
-            register_delivery_content(
-                workdir_fs, archive_path, gav, registration_client)
+            register_delivery_content( workdir_fs, archive_path, gav, registration_client)
             registration_client.disconnect()
-            logging.debug("Checksums were computed for " + delivery.gav)
-            return ProcessStatus("registration_process", "OK", "", None)
         except Exception as e:
-            logging.error("An error occured during checksums registration for " + delivery.gav + repr(e))
+            logging.exception(e)
             return ProcessStatus("registration_process", "FAILED", repr(e), e)
+
+        logging.debug("Checksums were computed for GAV: '%s'" % delivery.gav)
+        return ProcessStatus("registration_process", "OK", "", None)
 
     def notify_client(self, delivery_params, build_exception):
         recipient = '@'.join([delivery_params["mf_delivery_author"], os.getenv("MAIL_DOMAIN")])
@@ -168,12 +165,13 @@ class BuildProcess(object):
             with AutoSetupNotificator(conn_mgr=self.conn_mgr) as notificator:
                 if not build_exception or isinstance(build_exception, PreparedDeliveryProcessingError):
                     notificator.send_success_notification(recipient, gav)
-                    return ProcessStatus("notify_client", "OK", "", None)
 
         except Exception as e:  # TODO: replace with Notificator/MailerException
             # ignore errors raised by notification
-            logging.error("An error occured on notification send" + repr(e))
+            logging.exception(e)
             return ProcessStatus("notify_client", "FAILED", repr(e), e)
+
+        return ProcessStatus("notify_client", "OK", "", None)
 
 
 class PreparedDeliveryProcessingError(Exception):

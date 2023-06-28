@@ -17,12 +17,9 @@ def delivery_is_in_db(delivery_params):
     delivery_number = Delivery.objects.filter(group_criterion &
                                               artifact_criterion &
                                               version_criterion).count()
-    if delivery_number != 0:
-        logging.debug("Delivery is already stored in DB")
-        return True
-    else:
-        logging.debug("Delivery is NOT in DB")
-        return False
+    logging.info("Deliveries in db: %d" % delivery_number)
+
+    return bool(delivery_number)
 
 
 def save_delivery_to_db(delivery_params, resources, context):
