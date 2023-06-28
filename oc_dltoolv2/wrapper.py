@@ -33,9 +33,9 @@ class Wrapper(object):
         :param svn_fs: SvnFS pointing to root of branch. Used to determine wrap list 
         :return: list of DeliveryResource where files to wrap are replaced with its wrapped versions """
         selected, skipped = self._split_resources(resources, svn_fs)
-        logging.info("To be wrapped: " + ", ".join([resource.location_stub.path
+        logging.info("To be wrapped: [%s]" % ";".join([resource.location_stub.path
                                                    for resource in selected]))
-        wrapped_resources = list (map(self._wrap_resource, selected) )
+        wrapped_resources = list(map(self._wrap_resource, selected) )
         resulting_resources = wrapped_resources + skipped
         return resulting_resources
 
@@ -91,8 +91,8 @@ class Wrapper(object):
             with svn_fs.open(file_url) as wrap_file:
                 requested_custs = list(filter(lambda y: bool(y), list(map(lambda x: x.strip(), wrap_file.readlines()))))
             existing_custs = svn_fs.listdir(folder_url)
-            logging.debug("Existing custs: [%s]" % (';'.join(existing_custs) if existing_custs else "")
-            logging.debug("Requested custs: [%s]" % ';'.join(requested_custs) if requested_custs else "")
+            logging.debug("Existing custs: [%s]" % (';'.join(existing_custs) if existing_custs else ""))
+            logging.debug("Requested custs: [%s]" % (';'.join(requested_custs) if requested_custs else ""))
             resulting_custs = [cust for cust in existing_custs
                                if cust.lower() in requested_custs]
             return resulting_custs
