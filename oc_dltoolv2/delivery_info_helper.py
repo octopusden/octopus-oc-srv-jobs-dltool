@@ -3,7 +3,6 @@ import logging
 import requests
 import os
 import json
-from .delivery_exceptions import DeliveryDeniedException
 
 class DeliveryInfoHelper(object):
     def __init__(self, delivery_params):
