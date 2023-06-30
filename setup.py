@@ -1,4 +1,3 @@
-import os
 from setuptools import setup
 
 included_packages = ["oc_dltoolv2"]
