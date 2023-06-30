@@ -35,7 +35,7 @@ class Wrapper(object):
         selected, skipped = self._split_resources(resources, svn_fs)
         logging.info("To be wrapped: [%s]" % ";".join([resource.location_stub.path
                                                    for resource in selected]))
-        wrapped_resources = list(map(self._wrap_resource, selected) )
+        wrapped_resources = list(map(self._wrap_resource, selected))
         resulting_resources = wrapped_resources + skipped
         return resulting_resources
 
