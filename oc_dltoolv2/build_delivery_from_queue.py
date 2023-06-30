@@ -154,7 +154,7 @@ class BuildProcess(object):
             registration_client.connect()  # should be called just before sending message
             for resource in resources:
                 register_delivery_resource(resource, registration_client, checksums_list)
-            register_delivery_content( workdir_fs, archive_path, gav, registration_client)
+            register_delivery_content(workdir_fs, archive_path, gav, registration_client)
             registration_client.disconnect()
         except Exception as e:
             logging.exception(e)
