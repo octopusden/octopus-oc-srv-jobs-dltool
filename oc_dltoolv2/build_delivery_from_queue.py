@@ -72,7 +72,7 @@ class BuildProcess(object):
             delivery_list = self._DeliveryList(
                 delivery_params["mf_delivery_files_specified"])
         except self._InvalidPathError as ipe:
-            raise BuildError("Invalid path in delivery list: " + str(ipe))
+            raise BuildError(ipe)
         gav_str = "%s:%s:%s:zip" % tuple(
             delivery_params[key] for key in  # GAV gets created in Delivery Wizard and saved to delivery_info.txt
             ["groupid", "artifactid", "version"])
