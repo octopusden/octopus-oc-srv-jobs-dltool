@@ -1,7 +1,7 @@
 import json
 import logging
 import fs
-from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
+from .delivery_info_helper import DeliveryInfoHelper
 
 ## this may be necessary in the future if we enable 'deliveryArea' tag
 ## currently it is disabled due to absence of evidence in Copyright regulations

@@ -1,4 +1,4 @@
-from oc_mailer import Mailer
+from oc_mailer.Mailer import Mailer
 from oc_connections.ConnectionManager import ConnectionManager
 import os
 

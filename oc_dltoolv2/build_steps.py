@@ -4,13 +4,13 @@ from oc_pyfs import SvnFS, NexusFS
 from fs import copy as fs_copy
 from fs.tempfs import TempFS
 
-from oc_dltoolv2.SqlWrapper import SqlWrapper
-from oc_dltoolv2.archiver import DeliveryArchiver
-from oc_dltoolv2.local_load import download_resource
-from oc_dltoolv2.resolver import BuildRequestResolver
-from oc_dltoolv2.resources import RequestContext
-from oc_dltoolv2.wrapper import Wrapper
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
+from oc_sql_helpers.wrapper import PLSQLWrapper
+from .archiver import DeliveryArchiver
+from .local_load import download_resource
+from .resolver import BuildRequestResolver
+from .resources import RequestContext
+from .wrapper import Wrapper
+from .delivery_exceptions import DeliveryDeniedException
 from hashlib import md5
 import logging
 
@@ -46,7 +46,7 @@ def build_delivery(resources, delivery_params, context):
     branch_fs = SvnFS.SvnFS(delivery_params["mf_tag_svn"], svn_client)
 
     with TempFS(temp_dir=".") as workdir_fs:
-        wrapper = Wrapper(SqlWrapper())
+        wrapper = Wrapper(PLSQLWrapper())
         wrapped_resources = wrapper.get_wrapped_resources(resources, branch_fs)
         svn_prefix = branch_fs.getsyspath("/")
         archiver = DeliveryArchiver(workdir_fs, delivery_params)

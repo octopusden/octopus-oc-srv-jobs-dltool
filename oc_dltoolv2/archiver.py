@@ -11,8 +11,8 @@ from fs.compress import write_zip
 from fs.errors import DirectoryExists
 from fs.tempfs import TempFS
 import json
-from oc_dltoolv2.delivery_info_decoder import DeliveryInfoDecoder
-from oc_dltoolv2.delivery_copyright_appender import DeliveryCopyrightAppender
+from .delivery_info_decoder import DeliveryInfoDecoder
+from .delivery_copyright_appender import DeliveryCopyrightAppender
 
 
 class DeliveryArchiver(object):

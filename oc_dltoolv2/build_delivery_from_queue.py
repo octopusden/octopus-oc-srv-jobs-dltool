@@ -1,24 +1,19 @@
-import argparse
 import logging
-import traceback
 import os
 from collections import namedtuple
 
 from oc_cdtapi.NexusAPI import parse_gav
 from oc_connections.ConnectionManager import ConnectionManager
 
-#from cdt.connections.ORMConfigurator import configure_django_orm
 from oc_orm_initializator.orm_initializator import OrmInitializator
-from oc_checksumsq.checksums_interface import ChecksumsQueueClient
-from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
+import oc_checksumsq.checksums_interface
 from fs.tempfs import TempFS
 
-import oc_dltoolv2.DeliveryChannels as DeliveryChannels
-from oc_dltoolv2.errors import BuildError
-from oc_dltoolv2.notifications import AutoSetupNotificator
-from oc_dltoolv2.distributives_api_client import DistributivesAPIClient
+from .errors import BuildError
+from .notifications import AutoSetupNotificator
+from .distributives_api_client import DistributivesAPIClient
 
-from oc_dltoolv2.delivery_artifacts_checker import DeliveryArtifactsChecker
+from .delivery_artifacts_checker import DeliveryArtifactsChecker
 
 
 class BuildProcess(object):
@@ -36,16 +31,33 @@ class BuildProcess(object):
         # self.registration_client.basic_args(self.parser)  # add AMQP-specific arguments
 
         if self.setup_orm:
-            #configure_django_orm(self.conn_mgr, INSTALLED_APPS=[
-            #    "dlmanager", "django.contrib.auth", "django.contrib.contenttypes"])
-            OrmInitializator(installed_apps = ['dlmanager'])
+            _c = {"PSQL_URL": None, "PSQL_USER": None, "PSQL_PASSWORD": None}
+
+            for _k in _c.keys():
+                _c[_k] = kvargs.pop(_k.lower(), "") or os.getenv(_k, "")
+
+                if not _c[_k]:
+                    raise ValueError("'%s' is mandatory" % _k)
+
+            _installed_apps = [
+                    'oc_delivery_apps.dlmanager',
+                    'oc_delivery_apps.checksums']
+
+            OrmInitializator(url=_c.get("PSQL_URL"), user=_c.get("PSQL_USER"), password=_c.get("PSQL_PASSWORD"), installed_apps=_installed_apps)
+        
+        # django models can be imported if django is configured only, so make it here
+        from oc_delivery_apps.dlmanager.DLModels import DeliveryList, InvalidPathError
+        from . import DeliveryChannels
+        self._DeliveryList = DeliveryList
+        self._InvalidPathError = InvalidPathError
+        self._DeliveryChannels = DeliveryChannels
 
     def get_target_delivery_params(self, tag):
         """ Retrieve delivery params from delivery tag
         :param tag: URL of tag to read
         :return: dict of delivery attributes (keys are equal to db model fields) """
         clients_repo = self.conn_mgr.get_url("SVN_CLIENTS")
-        channel = DeliveryChannels.SvnDeliveryChannel(
+        channel = self._DeliveryChannels.SvnDeliveryChannel(
             clients_repo, self.conn_mgr.get_svn_client("SVN"))
         delivery_params = channel.read_delivery_at_branch(tag)
         return delivery_params
@@ -56,21 +68,23 @@ class BuildProcess(object):
         :param delivery_params: parsed params from url or tag
         """
         try:
-            # originated from delivery_info.txt in SVN tag. DeliveryList is a django-ORM model
-            delivery_list = DeliveryList(
+            # originated from delivery_info.txt in SVN tag. self._DeliveryList is a django-ORM model
+            delivery_list = self._DeliveryList(
                 delivery_params["mf_delivery_files_specified"])
-        except InvalidPathError as ipe:
-            raise BuildError("Invalid path in delivery list: " + str(ipe))
+        except self._InvalidPathError as ipe:
+            raise BuildError(ipe)
         gav_str = "%s:%s:%s:zip" % tuple(
             delivery_params[key] for key in  # GAV gets created in Delivery Wizard and saved to delivery_info.txt
             ["groupid", "artifactid", "version"])
         gav = parse_gav(gav_str)
 
-        from build_steps import BuildContext, collect_sources, calculate_and_check_checksums, build_delivery, upload_delivery
-        from db_steps import save_delivery_to_db, delivery_is_in_db
+        from .build_steps import BuildContext, collect_sources, calculate_and_check_checksums, build_delivery, upload_delivery
+        from .db_steps import save_delivery_to_db, delivery_is_in_db
 
         if delivery_is_in_db(delivery_params):
+            logging.info("Delivery is in DB already")
             return ProcessStatus("build_process", "WARNING", "Delivery already built and stored in DB", None)
+
         # exceptions at single steps are not processed - they should stop build process
         with TempFS(temp_dir=".") as workdir_fs:
             # BuildContext is just a NamedTuple that has workdir_fs and conn_mgr
@@ -88,14 +102,15 @@ class BuildProcess(object):
             archive_path = build_delivery(resources, delivery_params, context)
             upload_delivery(archive_path, gav, context)
             delivery = save_delivery_to_db(delivery_params, resources, context)
-            logging.debug("Delivery was saved to database: " + delivery.gav)
+            logging.debug("Delivery was saved to database, GAV: '%s'" % delivery.gav)
 
             # even if checksums registration will fail, delivery will still be created
             registration_process_res = self.registration_process(
                     delivery, resources, workdir_fs, archive_path, gav, checksums_list)
-            return registration_process_res
 
-            # return (mail_result, reg_result)
+            logging.debug("Registration process done")
+
+            return registration_process_res
 
     def build_delivery_from_tag(self, requested_tag=None):
 
@@ -112,40 +127,41 @@ class BuildProcess(object):
             registration_process_res = self.build_process(delivery_params)
             build_exception = None
         except Exception as exc:
-            traceback.print_exc()
+            logging.exception(exc)
             build_exception = exc
 
         notify_res = self.notify_client(delivery_params, build_exception)
         build_res = [registration_process_res, notify_res]
+
         if build_exception:
             logging.error("Build failed for tag %s" % requested_tag)
             raise build_exception
-        else:
-            logging.info("Build successful for tag %s" % requested_tag)
-            return build_res
+        
+        logging.info("Build successful for tag %s" % requested_tag)
+        return build_res
 
     def registration_process(self, delivery, resources, workdir_fs, archive_path, gav, checksums_list):
-        from register import register_delivery_content, register_delivery_resource
-        registration_client = ChecksumsQueueClient()
-        parser = argparse.ArgumentParser(
-            description="This script launches build process for delivery specified by groupid:artifactid:version")
-        default_args = registration_client.basic_args(parser).parse_args()
-        default_args.exchange = self.amqp_exchange
-        # Set max priority for messages from dltool
-        default_args.priority = 3
-        registration_client.setup_from_args(default_args)
+        from .register import register_delivery_content, register_delivery_resource
+        registration_client = oc_checksumsq.checksums_interface.ChecksumsQueueClient()
+        registration_client.setup(
+                url=os.getenv("AMQP_URL"),
+                username=os.getenv("AMQP_USER"),
+                password=os.getenv("AMQP_PASSWORD"),
+                routing_key=oc_checksumsq.checksums_interface.queue_name,
+                queue_cnt=oc_checksumsq.checksums_interface.queue_cnt_name,
+                priority=3)
         try:
             registration_client.connect()  # should be called just before sending message
             for resource in resources:
                 register_delivery_resource(resource, registration_client, checksums_list)
-            register_delivery_content(
-                workdir_fs, archive_path, gav, registration_client)
+            register_delivery_content(workdir_fs, archive_path, gav, registration_client)
             registration_client.disconnect()
-            logging.debug("Checksums were computed for " + delivery.gav)
-            return ProcessStatus("registration_process", "OK", "", None)
         except Exception as e:
-            logging.error("An error occured during checksums registration for " + delivery.gav + repr(e))
+            logging.exception(e)
             return ProcessStatus("registration_process", "FAILED", repr(e), e)
+
+        logging.debug("Checksums were computed for GAV: '%s'" % delivery.gav)
+        return ProcessStatus("registration_process", "OK", "", None)
 
     def notify_client(self, delivery_params, build_exception):
         recipient = '@'.join([delivery_params["mf_delivery_author"], os.getenv("MAIL_DOMAIN")])
@@ -155,12 +171,13 @@ class BuildProcess(object):
             with AutoSetupNotificator(conn_mgr=self.conn_mgr) as notificator:
                 if not build_exception or isinstance(build_exception, PreparedDeliveryProcessingError):
                     notificator.send_success_notification(recipient, gav)
-                    return ProcessStatus("notify_client", "OK", "", None)
 
         except Exception as e:  # TODO: replace with Notificator/MailerException
             # ignore errors raised by notification
-            logging.error("An error occured on notification send" + repr(e))
+            logging.exception(e)
             return ProcessStatus("notify_client", "FAILED", repr(e), e)
+
+        return ProcessStatus("notify_client", "OK", "", None)
 
 
 class PreparedDeliveryProcessingError(Exception):

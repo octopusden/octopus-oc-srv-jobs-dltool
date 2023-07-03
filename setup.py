@@ -1,21 +1,8 @@
-import os
 from setuptools import setup
-
-def list_recursive(app, directory, extension="*"):
-    """
-    it's the only way to include dir recursively
-    MANIFEST file can be used but is does not includes to binary distribution 
-    """
-    dir_to_walk = os.path.join(app, directory)
-    found = [result for (cur_dir, subdirs, files) in os.walk(dir_to_walk)
-             for result in glob.glob(os.path.join(cur_dir, '*.' + extension))]
-    found_in_package = map(lambda x: x.replace(app + "/", "", 1), found)
-    return found_in_package
-
 
 included_packages = ["oc_dltoolv2"]
 
-__version = '3.10.4'
+__version = '3.11.0'
 
 spec = { "name": "oc-dltool",
          "version": __version,
@@ -26,19 +13,17 @@ spec = { "name": "oc-dltool",
          "install_requires": [
            "oc-checksumsq",
            "oc-connections",
-           "oc-cdt_queue2",
+           "oc-cdt-queue2",
            "oc-dlinterface",
            "oc-portal-commons",
            "oc-delivery-apps",
            "oc-orm-initializator",
            "oc-mailer",
            "oc-sql-helpers",
-           "requests",
-           "coverage",
-           "django",
-           "django_tests"
+           "requests"
          ],
-         "packages": included_packages
+         "packages": included_packages,
+         "python_requires": ">=3.6"
       }
 
 setup (**spec)

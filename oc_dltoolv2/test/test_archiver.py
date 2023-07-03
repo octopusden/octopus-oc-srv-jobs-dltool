@@ -6,10 +6,10 @@ from django import test
 from fs.memoryfs import MemoryFS
 from fs.zipfs import ZipFS
 
-from oc_dltoolv2.archiver import DeliveryArchiver, ArchivationError
-from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
+from ..archiver import DeliveryArchiver, ArchivationError
+from ..resources import ResourceData, DeliveryResource, LocationStub
 
-from oc_dltoolv2.test.mocks import mocked_requests
+from ..test.mocks import mocked_requests
 from unittest import mock
 import os
 import django

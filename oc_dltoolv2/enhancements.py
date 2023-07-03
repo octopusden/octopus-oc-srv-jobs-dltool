@@ -3,8 +3,8 @@ from itertools import chain
 from oc_delivery_apps.checksums.models import LocTypes, CiTypes
 from django.core.exceptions import ObjectDoesNotExist
 
-from oc_dltoolv2.releasenotes import get_possible_releasenotes_gavs
-from oc_dltoolv2.resources import LocationStub, FSLocation, FileBasedResourceData, DeliveryResource
+from .releasenotes import get_possible_releasenotes_gavs
+from .resources import LocationStub, FSLocation, FileBasedResourceData, DeliveryResource
 
 
 class DeliveryListEnhancement(object):

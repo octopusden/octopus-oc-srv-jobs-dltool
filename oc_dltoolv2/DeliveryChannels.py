@@ -17,7 +17,7 @@ from fs.copy import copy_file
 from fs.errors import ResourceNotFound
 from fs.tempfs import TempFS
 
-from oc_dltoolv2.delivery_attributes import get_tag_delivery_name
+from .delivery_attributes import get_tag_delivery_name
 
 
 class SvnDeliveryChannel(object):

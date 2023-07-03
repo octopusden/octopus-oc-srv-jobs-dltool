@@ -4,11 +4,11 @@ from django import test
 from unittest.mock import patch
 from io import BytesIO
 from oc_delivery_apps.checksums.models import CiTypes, CsTypes, LocTypes, CiRegExp
-from oc_dltoolv2.build_steps import calculate_and_check_checksums
-from oc_dltoolv2.distributives_api_client import DistributivesAPIClient
-from oc_dltoolv2.resources import DeliveryResource, LocationStub, ResourceData
-from oc_dltoolv2.test.mocks import mocked_requests
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
+from ..build_steps import calculate_and_check_checksums
+from ..distributives_api_client import DistributivesAPIClient
+from ..resources import DeliveryResource, LocationStub, ResourceData
+from .mocks import mocked_requests
+from ..delivery_exceptions import DeliveryDeniedException
 
 
 class TestResourceData(ResourceData):

@@ -1,6 +1,6 @@
 import logging
 import os
-from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
+from .delivery_info_helper import DeliveryInfoHelper
 import fs
 
 class DeliveryCopyrightAppender(DeliveryInfoHelper):
@@ -21,7 +21,7 @@ class DeliveryCopyrightAppender(DeliveryInfoHelper):
         logging.info("Customer location for '%s': '%s'" % (_customer_code, _customer_location))
 
         if not _customer_location:
-            logging.warning("Customer '%s' does not have location tag. Copyright appending skipped")
+            logging.warning("Customer '%s' does not have location tag. Copyright appending skipped" % _customer_code)
             return
 
         _t = self._read_artifacts_conf(_customer_location)

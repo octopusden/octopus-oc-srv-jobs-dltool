@@ -2,10 +2,10 @@ from unittest import mock
 import django
 from django import test
 from . import django_settings
-from oc_dltoolv2.delivery_artifacts_checker import DeliveryArtifactsChecker
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
-from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
-from oc_dltoolv2.test.mocks import mocked_requests
+from ..delivery_artifacts_checker import DeliveryArtifactsChecker
+from ..delivery_exceptions import DeliveryDeniedException
+from ..resources import ResourceData, DeliveryResource, LocationStub
+from ..test.mocks import mocked_requests
 from tempfile import NamedTemporaryFile
 from oc_delivery_apps.checksums.models import LocTypes, CiTypes
 

@@ -7,8 +7,7 @@ from itertools import filterfalse as ifilterfalse
 from fs.errors import ResourceNotFound
 from fs.tempfs import TempFS
 
-from oc_dltoolv2.SqlWrapper import WrappingError
-from oc_dltoolv2.resources import ResourceData, DeliveryResource
+from .resources import ResourceData, DeliveryResource
 
 
 
@@ -34,9 +33,9 @@ class Wrapper(object):
         :param svn_fs: SvnFS pointing to root of branch. Used to determine wrap list 
         :return: list of DeliveryResource where files to wrap are replaced with its wrapped versions """
         selected, skipped = self._split_resources(resources, svn_fs)
-        logging.info("To be wrapped: " + ", ".join([resource.location_stub.path
+        logging.info("To be wrapped: [%s]" % ";".join([resource.location_stub.path
                                                    for resource in selected]))
-        wrapped_resources = list (map(self._wrap_resource, selected) )
+        wrapped_resources = list(map(self._wrap_resource, selected))
         resulting_resources = wrapped_resources + skipped
         return resulting_resources
 
@@ -52,11 +51,8 @@ class Wrapper(object):
         return selected, skipped
 
     def _wrap_resource(self, resource):
-        try:
-            wrapped_data = WrappedResourceData(resource.resource_data, self._wrap_client)
-        except WrappingError:
-            logging.exception("Wrapping failed for %s" % resource.location_stub.path)
-            raise
+        # there may be an exception - raise it then
+        wrapped_data = WrappedResourceData(resource.resource_data, self._wrap_client)
         # wrapping is transparent - location_stub still points to svn
         wrapped_resource = DeliveryResource(resource.location_stub, wrapped_data)
         return wrapped_resource
@@ -95,6 +91,8 @@ class Wrapper(object):
             with svn_fs.open(file_url) as wrap_file:
                 requested_custs = list(filter(lambda y: bool(y), list(map(lambda x: x.strip(), wrap_file.readlines()))))
             existing_custs = svn_fs.listdir(folder_url)
+            logging.debug("Existing custs: [%s]" % (';'.join(existing_custs) if existing_custs else ""))
+            logging.debug("Requested custs: [%s]" % (';'.join(requested_custs) if requested_custs else ""))
             resulting_custs = [cust for cust in existing_custs
                                if cust.lower() in requested_custs]
             return resulting_custs
@@ -121,9 +119,8 @@ class WrappedResourceData(ResourceData):
     def _wrap_data(self, data, wrap_client):
         with TempFS() as temp_fs:
             with data.get_content() as content_handle:
-                temp_fs.upload("filename", content_handle)
-                wrap_client.wrap_file(temp_fs, "filename")
-                wrapped_content = temp_fs.readbytes("filename")
+                temp_fs.upload("_f.sql", content_handle)
+                wrapped_content = wrap_client.wrap_path(temp_fs.getsyspath("_f.sql"))
         return wrapped_content
 
     def get_content(self):

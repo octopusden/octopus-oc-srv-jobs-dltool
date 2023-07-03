@@ -1,6 +1,6 @@
 import uuid
 
-from oc_dltoolv2.resources import DeliveryResource, ResourceData
+from .resources import DeliveryResource, ResourceData
 
 
 def download_resource(resource, work_fs):

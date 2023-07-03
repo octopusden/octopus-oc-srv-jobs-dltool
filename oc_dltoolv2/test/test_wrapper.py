@@ -10,9 +10,9 @@ from oc_delivery_apps.dlmanager.DLModels import DeliveryList
 from fs.errors import DirectoryExists
 from fs.memoryfs import MemoryFS
 
-from oc_dltoolv2.resolver import BuildRequestResolver
-from oc_dltoolv2.resources import RequestContext, LocationStub, DeliveryResource
-from oc_dltoolv2.wrapper import Wrapper
+from ..resolver import BuildRequestResolver
+from ..resources import RequestContext, LocationStub, DeliveryResource
+from ..wrapper import Wrapper
 
 
 
@@ -336,5 +336,5 @@ class WrappingTestSuite(django.test.TransactionTestCase):
 
 class MockWrapper(object):
 
-    def wrap_file(self, fs, file_path):
-        fs.writetext(file_path, "wrapped")
+    def wrap_path(self, path):
+        return b"wrapped"

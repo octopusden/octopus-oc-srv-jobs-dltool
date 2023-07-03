@@ -4,7 +4,7 @@ from django.test import TransactionTestCase
 import django
 
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueClient
-from oc_dltoolv2.test.mocks import MockConnectionManager, DLBuildWorkerMock
+from .mocks import MockConnectionManager, DLBuildWorkerMock
 
 
 class DLBuildWorkerTest(TransactionTestCase):

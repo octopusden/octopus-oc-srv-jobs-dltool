@@ -8,8 +8,8 @@ import django
 from fs.errors import ResourceNotFound
 from fs.memoryfs import MemoryFS
 
-from oc_dltoolv2.local_load import download_resource
-from oc_dltoolv2.resources import ResourceData, DeliveryResource, LocationStub
+from ..local_load import download_resource
+from ..resources import ResourceData, DeliveryResource, LocationStub
 
 
 class TestResourceData(ResourceData):

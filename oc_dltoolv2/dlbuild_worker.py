@@ -1,16 +1,25 @@
 import logging
 import os
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueServer
-from oc_dltoolv2.build_delivery_from_queue import BuildProcess
 
 
 class DLBuildWorker(DLBuildQueueServer):
 
     def __init__(self, *args, **kwargs):
-        logging.basicConfig(level=logging.DEBUG)
-        api_check_enabled = (os.getenv("DISTRIBUTIVES_API_CHECK_ENABLED", 'false').lower() in ["true", "yes"])
-        self.build_process = BuildProcess(api_check=api_check_enabled, **kwargs)
-        super(DLBuildWorker, self).__init__()
+        self._kwargs = kwargs.copy()
+        kwargs.pop('setup_orm', False)
+        kwargs.pop('conn_mgr', None)
+        super().__init__(*args, **kwargs)
+
+    @property
+    def build_process(self):
+        if not hasattr(self, '_build_process'):
+            api_check_enabled = (os.getenv("DISTRIBUTIVES_API_CHECK_ENABLED", 'false').lower() in ["true", "yes"])
+            logging.info("API check enabled: %s" % api_check_enabled)
+            from .build_delivery_from_queue import BuildProcess
+            self._build_process = BuildProcess(api_check=api_check_enabled, **self._kwargs)
+
+        return self._build_process
 
     def ping(self):
         return
@@ -26,7 +35,6 @@ class DLBuildWorker(DLBuildQueueServer):
                 err_message = "; The error is: '%s' (%s)" % (process_status.errmsg, process_status.exception)
                 logging.error(message + err_message)
         return
-
 
 if __name__ == '__main__':
     exit(DLBuildWorker().main())

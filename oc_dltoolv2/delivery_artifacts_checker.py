@@ -1,7 +1,7 @@
 import logging
 import re
-from oc_dltoolv2.delivery_info_helper import DeliveryInfoHelper
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
+from .delivery_info_helper import DeliveryInfoHelper
+from .delivery_exceptions import DeliveryDeniedException
 
 class DeliveryArtifactsChecker(DeliveryInfoHelper):
     def check_artifacts_included(self, delivery_resources):
@@ -30,7 +30,7 @@ class DeliveryArtifactsChecker(DeliveryInfoHelper):
         _customer_loc = self._get_customer_location(_customer_code)
 
         if not _customer_loc:
-            logging.warning("Customer '%s' does not have location tag. Artifacts check skipped")
+            logging.warning("Customer '%s' does not have location tag. Artifacts check skipped" % _customer_code)
             return True
 
         _artifacts_necessary, _artifacts_denied = self._get_artifacts_lineup(_customer_loc)

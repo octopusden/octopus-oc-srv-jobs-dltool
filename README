@@ -1,8 +1,0 @@
-
-This is delivery builder worker.
-It listens to cdt.dlbuild.input queue for build requests, gets delivery data from svn link got from request,
-builds delivery using svn and maven sources, registers it in delivery database, saves it to maven and sends
-requests to cdt.dlcontents.input/cdt.dlartifacts.input for registering delivery files
-
-Also, this job is responsible for wrapping (obfuscating) SQL code using Oracle wrap utility
-

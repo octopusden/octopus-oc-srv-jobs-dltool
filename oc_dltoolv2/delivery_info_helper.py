@@ -3,7 +3,6 @@ import logging
 import requests
 import os
 import json
-from oc_dltoolv2.delivery_exceptions import DeliveryDeniedException
 
 class DeliveryInfoHelper(object):
     def __init__(self, delivery_params):
