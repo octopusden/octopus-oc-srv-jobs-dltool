@@ -43,7 +43,7 @@ class Wrapper(object):
         is_svn_resource = lambda resource: resource.location_stub.location_type.code == "SVN"
         wrap_list = self._get_files_to_wrap(svn_fs)
         # endswith because path starts with client branch url
-        should_wrap = lambda resource: any(resource.location_stub.path.endswith(path)
+        should_wrap = lambda resource: any(resource.location_stub.path.lower().endswith(path.lower())
                                            for path in wrap_list)
         is_selected = lambda resource: is_svn_resource(resource) and should_wrap(resource)
         skipped = list(ifilterfalse(is_selected, resources))
@@ -89,7 +89,7 @@ class Wrapper(object):
     def _read_wrap_file(self, file_url, folder_url, svn_fs):
         try:
             with svn_fs.open(file_url) as wrap_file:
-                requested_custs = list(filter(lambda y: bool(y), list(map(lambda x: x.strip(), wrap_file.readlines()))))
+                requested_custs = list(filter(lambda y: bool(y), list(map(lambda x: x.strip().lower(), wrap_file.readlines()))))
             existing_custs = svn_fs.listdir(folder_url)
             logging.debug("Existing custs: [%s]" % (';'.join(existing_custs) if existing_custs else ""))
             logging.debug("Requested custs: [%s]" % (';'.join(requested_custs) if requested_custs else ""))

@@ -133,8 +133,8 @@ class WrappingTestSuite(django.test.TransactionTestCase):
                                                  self._c_cust("c_cust2.sql"),
                                                  self._d_cust("d_cust1.sql"),
                                                  self._d_cust("d_cust2.sql"), ])
-        context.svn_fs.writetext(posixpath.join(self.c_label, "wrap.txt"), "c_cust1.sql\nc_cust2.sql")
-        context.svn_fs.writetext(posixpath.join(self.d_label, "wrap.txt"), "d_cust1.sql")
+        context.svn_fs.writetext(posixpath.join(self.c_label, "wrap.txt"), "c_cust1.sql\nc_cust2.sql".upper())
+        context.svn_fs.writetext(posixpath.join(self.d_label, "wrap.txt"), "d_cust1.sql".upper())
 
         resolver = get_resolver()
         clean_resources = resolver.resolve_request(DeliveryList([posixpath.join(self.c_label, self.wdir), 
@@ -203,9 +203,9 @@ class WrappingTestSuite(django.test.TransactionTestCase):
                                                         self._d_owner("dd_s.sql"), ])
 
     def test_wrap_files_from_both_sources(self):
-        context = get_request_context(svn_files=[self._c_cust("c_cust1.sql"),
-                                                 self._c_cust("c_cust2.sql"),
-                                                 self._d_cust("d_cust1.sql"),
+        context = get_request_context(svn_files=[self._c_cust("c_cust1.sql".upper()),
+                                                 self._c_cust("c_cust2.sql".upper()),
+                                                 self._d_cust("d_cust1.sql".upper()),
                                                  self._d_cust("d_cust2.sql"),
                                                  self._c_owner("c_b.sql"),
                                                  self._c_owner("c_s.sql"),
@@ -221,9 +221,9 @@ class WrappingTestSuite(django.test.TransactionTestCase):
         self.assert_resources_resolved(resources, context,
                                        wrapped_svn_files=[self._c_owner("c_b.sql"),
                                                           self._d_owner("d_b.sql"),
-                                                          self._c_cust("c_cust1.sql"),
-                                                          self._c_cust("c_cust2.sql"),
-                                                          self._d_cust("d_cust1.sql"), ],
+                                                          self._c_cust("c_cust1.sql".upper()),
+                                                          self._c_cust("c_cust2.sql".upper()),
+                                                          self._d_cust("d_cust1.sql".upper()), ],
                                        clean_svn_files=[self._c_owner("c_s.sql"),
                                                         self._d_owner("d_s.sql"),
                                                         self._d_cust("d_cust2.sql")])
