@@ -27,7 +27,7 @@ class SvnDeliveryChannel(object):
     Also upon tag creation file with delivery parameters is added;
     parameters retrieval is based on this file's content.    
     """
-    locale.setlocale(locale.LC_ALL, '') # We're setting this parameter to avoid issues with unicode literals in SVN files' names. SI-9667
+    locale.setlocale(locale.LC_ALL, 'C') # We're setting this parameter to avoid issues with unicode literals in SVN files' names. SI-9667
     params_file_path = "delivery_info.txt"
 
     def __init__(self, clients_repo_url, svn_client):
