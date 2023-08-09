@@ -313,7 +313,7 @@ class ReleasenotesResolutionTestSuite(RequestResolutionTestSuite):
         resources = resolve(DeliveryList(["g:a:v1-123:zip", "g:a:v2-XXX:zip"]), context)
         self.assert_request_resolved(resources, context,
                                      artifacts=["g:a:v1-123:zip", "g:a:v2-XXX:zip",
-                                                releasenotes1_gav])
+                                                releasenotes1_gav, releasenotes2_gav])
 
 
 class SvnDirExpansionTestSuite(RequestResolutionTestSuite):
