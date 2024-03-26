@@ -36,5 +36,19 @@ class DLBuildWorker(DLBuildQueueServer):
                 logging.error(message + err_message)
         return
 
+    def custom_args(self, parser):
+        """
+        Append specific arguments for this worker
+        :param argparse.ArgumentParser parser: parser with arguments
+        :return argparse.ArgumentParse: modified parser with additional arguments
+        """
+
+        ### SMTP (mailer) arguments
+        parser.add_argument("--mail-config-file", dest="mail_config_file", help="Mailer configuration file",
+                            default=os.getenv("MAIL_CONFIG_FILE"))
+
+        return parser
+
+
 if __name__ == '__main__':
     exit(DLBuildWorker().main())

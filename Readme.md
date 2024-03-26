@@ -44,6 +44,8 @@ Most of them are done via environment variables and several only can be re-defin
 - *DISTRIBUTIVES\_API\_CHECK\_ENABLED* - enable or disable check if distributives included to the delivery are deliverable. Default: `"False"`
 - *DISTRIBUTIVES\_API\_URL* - *URL* for *Distributives API* microservice. Mandatory if *DISTRIBUTIVES\_API\_CHECK\_ENABLED* is set to `"True"`
 - *MAIL\_DOMAIN* - mail domain for notifications where delivery authors mailboxes are.
+- *MAIL\_CONFIG\_FILE* - path to mailer configuration file.
+- *MAIL\_CONFIG\_DIR* - path to mailer configuration directory.
 - *COUNTERPARTY\_ENABLED* - enable or disable client counterparty functionality for Release Notes and Documentation appending. Default: `"False"`      
 - *CLIENT\_PROVIDER\_URL* - *URL* for *Client Provider* microservice. Mandatory if *COUNTERPARTY\_ENABLED* is set to `"True"`
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`

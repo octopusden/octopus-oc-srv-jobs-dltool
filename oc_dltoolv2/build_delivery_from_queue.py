@@ -21,6 +21,7 @@ class BuildProcess(object):
     def __init__(self, *args, **kvargs):
         self.conn_mgr = kvargs.pop('conn_mgr', ConnectionManager())
         self.setup_orm = kvargs.pop('setup_orm', True)
+        self.mail_config_file = kvargs['mail_config_file']
         if kvargs.pop('api_check', False):
             self.distributives_api_client = DistributivesAPIClient()
         else:
@@ -168,7 +169,7 @@ class BuildProcess(object):
         gav = {"g": delivery_params["groupid"], "a": delivery_params["artifactid"],
                "v": delivery_params["version"]}
         try:
-            with AutoSetupNotificator(conn_mgr=self.conn_mgr) as notificator:
+            with AutoSetupNotificator(conn_mgr=self.conn_mgr, mail_config_file=self.mail_config_file) as notificator:
                 if not build_exception or isinstance(build_exception, PreparedDeliveryProcessingError):
                     notificator.send_success_notification(recipient, gav)
 
