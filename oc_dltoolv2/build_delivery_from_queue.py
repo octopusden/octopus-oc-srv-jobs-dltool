@@ -21,7 +21,7 @@ class BuildProcess(object):
     def __init__(self, *args, **kvargs):
         self.conn_mgr = kvargs.pop('conn_mgr', ConnectionManager())
         self.setup_orm = kvargs.pop('setup_orm', True)
-        self.mail_config_file = kvargs['mail_config_file']
+        self.mail_config_file = kvargs.pop('mail_config_file', None)
         if kvargs.pop('api_check', False):
             self.distributives_api_client = DistributivesAPIClient()
         else:
