@@ -1,3 +1,4 @@
+from oc_cdtapi.NexusAPI import gav_to_str
 from oc_mailer.Mailer import Mailer
 from oc_connections.ConnectionManager import ConnectionManager
 import os
@@ -14,7 +15,7 @@ class Notificator(object):
         self.ci_url = ci_url
 
     def send_success_notification(self, recipient, gav):
-        gav_text = _get_gav_text(gav)
+        gav_text = gav_to_str(gav)
         subject = "Delivery %s has been built successfully" % gav_text
         portal_link = self._get_portal_link(gav)
         portal_href = _create_href(portal_link, "Delivery Portal")
@@ -25,7 +26,7 @@ class Notificator(object):
         self._send(recipient, subject, text)
 
     def send_failure_notification(self, recipient, gav, job_name, build_number):
-        gav_text = _get_gav_text(gav)
+        gav_text = gav_to_str(gav)
         subject = "Build for delivery %s has failed" % gav_text
         text = """
         Build for delivery <b>%s</b> <font color="red">has failed</font>.
@@ -47,7 +48,8 @@ class AutoSetupNotificator(object):
     Sets up properties for smtp interchange
     """
 
-    def __init__(self, conn_mgr=None):
+    def __init__(self, conn_mgr=None, mail_config_file=None):
+        self.mail_config_file = mail_config_file
         if conn_mgr is None:
             self.conn_mgr = ConnectionManager()
         else:
@@ -59,7 +61,7 @@ class AutoSetupNotificator(object):
         self.smtp_client = conn_mgr.get_smtp_connection()
         mail_from = '@'.join([smtp_user, os.getenv("MAIL_DOMAIN") ])
 
-        mailer = Mailer(self.smtp_client, mail_from)
+        mailer = Mailer(self.smtp_client, mail_from, config_path=self.mail_config_file)
 
         portal_url = conn_mgr.get_url("DELIVERY_PORTAL")
         notificator = Notificator(mailer, portal_url, None)
@@ -67,10 +69,6 @@ class AutoSetupNotificator(object):
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.smtp_client.quit()
-
-
-def _get_gav_text(gav):
-    return "%s:%s:%s" % (gav["g"], gav["a"], gav["v"])
 
 
 def _create_href(target_url, text):
