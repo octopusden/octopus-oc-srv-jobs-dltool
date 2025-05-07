@@ -51,6 +51,7 @@ class DeliveryInfoHelper(object):
             except Exception as e:
                 logging.exception(e)
 
+        logging.error("Unable to determine customer code from delivery parameters")
         return None
 
     def _get_customer_location(self, customer_code):
@@ -61,6 +62,7 @@ class DeliveryInfoHelper(object):
         """
         # since we do not have a mistake right - do not catch any exceptions,
         # raise them where they appear to fail a build then
+        logging.debug("Fetching customer location for: %s", customer_code)
         _client_provider_url = os.getenv('CLIENT_PROVIDER_URL')
 
         if not _client_provider_url:

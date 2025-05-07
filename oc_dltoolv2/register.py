@@ -14,15 +14,19 @@ def register_delivery_resource(resource, registration_client, checksums_list):
     :param resource: DeliveryResource item
     """
     location_stub, resource_data = resource
+    logging.debug("Registering delivery resource for path: %s", location_stub.path)
 
     precalculated_checksum = None
     
     if checksums_list:
+        logging.debug("Looking for precalculated checksum in checksums list")
         precalculated_checksum = next((distributive["checksum"] for distributive in checksums_list if distributive["path"] == location_stub.path), None)
     
     if precalculated_checksum:
+        logging.debug("Found precalculated checksum: %s", precalculated_checksum)
         checksum = precalculated_checksum
     else:
+        logging.debug("No precalculated checksum found, calculating manually")
         with resource_data.get_content() as content_handle:
             hmd5 = md5()
             while True:
@@ -30,10 +34,13 @@ def register_delivery_resource(resource, registration_client, checksums_list):
                 if not chunk: break
                 hmd5.update(chunk)
             checksum = hmd5.hexdigest()
-    
-    file_location = FileLocation(location_stub.path, location_stub.location_type.code, location_stub.revision)
-    registration_client.register_checksum(file_location, checksum, citype=location_stub.citype.code)
+    logging.debug("Calculated checksum: %s", checksum)
 
+    file_location = FileLocation(location_stub.path, location_stub.location_type.code, location_stub.revision)
+    logging.debug("Registering checksum for file location: %s", file_location)
+
+    registration_client.register_checksum(file_location, checksum, citype=location_stub.citype.code)
+    logging.info("Registered checksum for resource: %s", location_stub.path)
 
 def register_delivery_content(local_fs, archive_path, gav, registration_client):
     """ 
@@ -43,12 +50,17 @@ def register_delivery_content(local_fs, archive_path, gav, registration_client):
     :param gav: NexusAPI's GAV to register under
     """
     gav_str = "%s:%s:%s:zip" % tuple(gav[key] for key in ["g", "a", "v"])
+    logging.debug("Registering delivery content for GAV: %s", gav_str)
     try:
         if local_fs.getinfo(archive_path, namespaces=["details"]).size == 0:
+            logging.error("File %s for %s is empty", archive_path, gav_str)
             raise RegisterError("File %s for %s is empty" % (archive_path, gav_str))
         file_location = FileLocation(gav_str, "NXS", None)
+        logging.debug("Registering file with location: %s", file_location)
         registration_client.register_file(file_location, "DELIVERY", 1)
+        logging.info("Registered delivery content for GAV: %s", gav_str)
     except ResourceNotFound:
+        logging.error("File %s not found for %s", archive_path, gav_str)
         raise RegisterError("File %s not found for %s" % (archive_path, gav_str))
 
 

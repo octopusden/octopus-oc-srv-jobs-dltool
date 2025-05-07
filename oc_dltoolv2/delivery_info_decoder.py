@@ -17,8 +17,9 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
         :param separators: separators for JSON pretty-print
         :type separators: Tuple
         """
+        logging.debug("Creating new DeliveryInfoDecoder instance")
+
         super(DeliveryInfoDecoder, self).__init__(delivery_params)
-        logging.debug("Creating new DeliveryInfoDecoder")
         self._delivery_resources = delivery_resources
         self._seps = separators
         self._output = dict()
@@ -33,7 +34,7 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
             self._id_keys()
             self._resources_keys()
         except Exception as e:
-            logging.exception(e)
+            logging.exception("Exception occurred during initialization: %s", e)
 
     def _id_keys(self):
         """
@@ -42,7 +43,7 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
         ### Keys necessary:
         ## deliveryId - a part of GAV: 'CLIENT:artifactId:version'
         ## deliveryArea- last two tokens from hostname from SVN url 
-        logging.debug("Constructing delivery ID")
+        logging.debug("Constructing deliveryId from customer code, artifactid, and version")
         self._output["deliveryId"] = ':'.join(
                 [self._find_customer_code()] + list(self._delivery_params[_k] for _k in ["artifactid", "version"]))
         logging.debug("Constructed delivery ID: '%s'" % self._output.get("deliveryId"))
@@ -69,16 +70,18 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
         ##   path - path INSIDE delivery
         ##   type - CI Type Code
         ##   NOT IMPLEMENTED: checksum - MD5 checksum
+        logging.debug("Extracting deliveryFiles from delivery_resources")
         self._output["deliveryFiles"] = list(map(lambda x: {
             "path": x[1],
             "citype": x[0].location_stub.citype.code,
             }, self._delivery_resources))
+        logging.debug("deliveryFiles successfully constructed")
 
     def _convert_files_list(self):
         """
         Convert "mf_delivery_files_specified" to a list instead of multi-lined string
         """
-        logging.debug("Converting delivery files list")
+        logging.debug("Attempting to convert 'mf_delivery_files_specified' to list")
         _key = "mf_delivery_files_specified"
 
         # this will raise "KeyError" if no files specified in the delivery
@@ -89,6 +92,7 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
         elif isinstance(_kv, list):
             self._delivery_params[_key] = []
             for _df in _kv: self._delivery_params[_key].extend(_df.splitlines())
+        logging.debug("Converted 'mf_delivery_files_specified' to list: %s", self._delivery_params[_key])
 
     def write_to_file(self, dst_fs, dst_path):
         """
@@ -97,10 +101,11 @@ class DeliveryInfoDecoder(DeliveryInfoHelper):
         :type write_to: path to the file inside the destination filesystem
         """
         # we do not want to fail if something goes wrong
-        logging.debug("Trying to save delivery_info to '%s'" % dst_path)
+        logging.debug("Attempting to write delivery info JSON to: '%s'" % dst_path)
         try:
             with dst_fs.open(dst_path, mode="w") as _fl_out:
                 _fl_out.write(json.dumps(self._output, sort_keys=False, 
                     indent=4, ensure_ascii=False, separators=self._seps))
+                logging.debug("Successfully wrote delivery info to '%s'" % dst_path)
         except Exception as e:
-            logging.exception(e)
+            logging.exception("Exception while writing delivery info to file: %s", e)

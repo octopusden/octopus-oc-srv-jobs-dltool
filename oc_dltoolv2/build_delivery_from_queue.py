@@ -57,10 +57,12 @@ class BuildProcess(object):
         """ Retrieve delivery params from delivery tag
         :param tag: URL of tag to read
         :return: dict of delivery attributes (keys are equal to db model fields) """
+        logging.info("Starting to retrieve delivery parameters from tag: %s", tag)
         clients_repo = self.conn_mgr.get_url("SVN_CLIENTS")
         channel = self._DeliveryChannels.SvnDeliveryChannel(
             clients_repo, self.conn_mgr.get_svn_client("SVN"))
         delivery_params = channel.read_delivery_at_branch(tag)
+        logging.info("Successfully retrieved delivery parameters from tag")
         return delivery_params
 
     def build_process(self, delivery_params):
@@ -68,6 +70,7 @@ class BuildProcess(object):
         Build process pipeline
         :param delivery_params: parsed params from url or tag
         """
+        logging.info("Starting build process")
         try:
             # originated from delivery_info.txt in SVN tag. self._DeliveryList is a django-ORM model
             delivery_list = self._DeliveryList(
@@ -83,7 +86,7 @@ class BuildProcess(object):
         from .db_steps import save_delivery_to_db, delivery_is_in_db
 
         if delivery_is_in_db(delivery_params):
-            logging.info("Delivery is in DB already")
+            logging.info("Delivery is already in DB, skipping build")
             return ProcessStatus("build_process", "WARNING", "Delivery already built and stored in DB", None)
 
         # exceptions at single steps are not processed - they should stop build process
@@ -98,22 +101,22 @@ class BuildProcess(object):
                 checksums_list = None
 
             if os.getenv('COUNTERPARTY_ENABLED', 'false').lower() in ['true', 'yes', 'y']:
+                logging.info("Checking inclusion of customer-specific artifacts")
                 DeliveryArtifactsChecker(delivery_params).check_artifacts_included(resources)
-
             archive_path = build_delivery(resources, delivery_params, context)
+
             upload_delivery(archive_path, gav, context)
             delivery = save_delivery_to_db(delivery_params, resources, context)
-            logging.debug("Delivery was saved to database, GAV: '%s'" % delivery.gav)
 
             # even if checksums registration will fail, delivery will still be created
+            logging.info("Starting registration process")
             registration_process_res = self.registration_process(
                     delivery, resources, workdir_fs, archive_path, gav, checksums_list)
-
-            logging.debug("Registration process done")
 
             return registration_process_res
 
     def build_delivery_from_tag(self, requested_tag=None):
+        logging.info("Starting build from tag: %s", requested_tag)
 
         build_params = {"mf_ci_job": "queue", "mf_ci_build": "0"}
         # don't send notification if delivery params read has failed - we don't know the recipient
@@ -131,7 +134,9 @@ class BuildProcess(object):
             logging.exception(exc)
             build_exception = exc
 
+        logging.info("Notifying client")
         notify_res = self.notify_client(delivery_params, build_exception)
+
         build_res = [registration_process_res, notify_res]
 
         if build_exception:
@@ -151,23 +156,29 @@ class BuildProcess(object):
                 routing_key=oc_checksumsq.checksums_interface.queue_name,
                 queue_cnt=oc_checksumsq.checksums_interface.queue_cnt_name,
                 priority=3)
+        logging.info("Connecting to registration queue")
         try:
             registration_client.connect()  # should be called just before sending message
+
+            logging.info("Registering delivery resources")
             for resource in resources:
                 register_delivery_resource(resource, registration_client, checksums_list)
+
+            logging.info("Registering delivery content")
             register_delivery_content(workdir_fs, archive_path, gav, registration_client)
             registration_client.disconnect()
         except Exception as e:
             logging.exception(e)
             return ProcessStatus("registration_process", "FAILED", repr(e), e)
 
-        logging.debug("Checksums were computed for GAV: '%s'" % delivery.gav)
+        logging.info("Checksums were computed for GAV: '%s'" % delivery.gav)
         return ProcessStatus("registration_process", "OK", "", None)
 
     def notify_client(self, delivery_params, build_exception):
         recipient = '@'.join([delivery_params["mf_delivery_author"], os.getenv("MAIL_DOMAIN")])
         gav = {"g": delivery_params["groupid"], "a": delivery_params["artifactid"],
                "v": delivery_params["version"]}
+        logging.info("Preparing to send notification to client: %s", recipient)
         try:
             with AutoSetupNotificator(conn_mgr=self.conn_mgr, mail_config_file=self.mail_config_file) as notificator:
                 if not build_exception or isinstance(build_exception, PreparedDeliveryProcessingError):

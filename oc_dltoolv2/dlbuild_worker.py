@@ -36,6 +36,8 @@ class DLBuildWorker(DLBuildQueueServer):
             else:
                 err_message = "; The error is: '%s' (%s)" % (process_status.errmsg, process_status.exception)
                 logging.error(message + err_message)
+
+        logging.info("Build process completed for tag %s", delivery_tag)
         return
 
     def init(self, args):
@@ -53,4 +55,5 @@ class DLBuildWorker(DLBuildQueueServer):
 
 
 if __name__ == '__main__':
+    logging.debug("Starting DLBuildWorker main loop")
     exit(DLBuildWorker().main())
