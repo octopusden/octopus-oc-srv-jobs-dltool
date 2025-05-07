@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueServer
+from oc_logging.Logging import setup_logging
 
 
 class DLBuildWorker(DLBuildQueueServer):
@@ -55,5 +56,6 @@ class DLBuildWorker(DLBuildQueueServer):
 
 
 if __name__ == '__main__':
+    setup_logging()
     logging.debug("Starting DLBuildWorker main loop")
     exit(DLBuildWorker().main())

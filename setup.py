@@ -2,7 +2,7 @@ from setuptools import setup
 
 included_packages = ["oc_dltoolv2"]
 
-__version = '3.11.4'
+__version = '3.12.0'
 
 spec = { "name": "oc-dltool",
          "version": __version,
@@ -20,7 +20,8 @@ spec = { "name": "oc-dltool",
            "oc-orm-initializator",
            "oc-mailer",
            "oc-sql-helpers",
-           "requests"
+           "requests",
+           "oc-logging"
          ],
          "packages": included_packages,
          "python_requires": ">=3.6"
