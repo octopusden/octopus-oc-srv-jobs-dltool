@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueServer
+from oc_logging.Logging import setup_logging
 
 
 class DLBuildWorker(DLBuildQueueServer):
@@ -36,6 +37,8 @@ class DLBuildWorker(DLBuildQueueServer):
             else:
                 err_message = "; The error is: '%s' (%s)" % (process_status.errmsg, process_status.exception)
                 logging.error(message + err_message)
+
+        logging.info("Build process completed for tag %s", delivery_tag)
         return
 
     def init(self, args):
@@ -53,4 +56,6 @@ class DLBuildWorker(DLBuildQueueServer):
 
 
 if __name__ == '__main__':
+    setup_logging()
+    logging.debug("Starting DLBuildWorker main loop")
     exit(DLBuildWorker().main())

@@ -16,6 +16,7 @@ from oc_delivery_apps.dlmanager.DLModels import DeliveryList
 from fs.copy import copy_file
 from fs.errors import ResourceNotFound
 from fs.tempfs import TempFS
+import logging
 
 from .delivery_attributes import get_tag_delivery_name
 
@@ -44,12 +45,15 @@ class SvnDeliveryChannel(object):
     def read_delivery_params(self, country, client, gav):
         # we don't know exact name of tag but we can filter tags matching (hf-/mig-/prj-)aid-ver
         # there should be only one tag
+        logging.info("Starting read_delivery_params with country=%s, client=%s, gav=%s", country, client, gav)
         client_url = os.path.join(self.clients_repo_url, country, client)
         tag_url = self._find_delivery_tag(client_url, gav)
         conf = self.read_delivery_at_branch(tag_url)
+        logging.info("Completed read_delivery_params")
         return conf
 
     def _find_delivery_tag(self, client_repo_url, gav):
+        logging.info("Starting _find_delivery_tag with client_repo_url=%s, gav=%s", client_repo_url, gav)
         client_tags_url = os.path.join(client_repo_url, "tags")
         tags_fs = SvnFS(client_tags_url, self.svn_client)
         all_tags = tags_fs.listdir("/")
@@ -61,6 +65,7 @@ class SvnDeliveryChannel(object):
                                % (len(matching_tags), tag_name_pattern, client_tags_url))
         tag_name = matching_tags[0]
         tag_url = os.path.join(client_tags_url, tag_name)
+        logging.info("Completed _find_delivery_tag with tag_url=%s", tag_url)
         return tag_url
 
     def read_delivery_at_branch(self, url):
@@ -68,6 +73,7 @@ class SvnDeliveryChannel(object):
         :param url: url to read parms from
         :return: dict of delivery attributes (keys are equal to db model fields)
         """
+        logging.info("Starting read_delivery_at_branch with url=%s", url)
         branch_fs = SvnFS(url, self.svn_client)
         if not url.startswith(self.clients_repo_url):
             raise ValueError("Target URL must start with %s" % self.clients_repo_url)
@@ -76,8 +82,10 @@ class SvnDeliveryChannel(object):
                 conf = ConfigObj(params_file, default_encoding="UTF8", encoding="UTF8")
                 revision = self.svn_client.info2(url, recurse=False)[0][1].rev.number
                 conf["mf_delivery_revision"] = revision
+                logging.info("Completed read_delivery_at_branch")
                 return conf
         except ResourceNotFound:
+            logging.error("No delivery params file at %s" % url)
             raise ChannelError("No delivery params file at %s" % url)
 
     def save_delivery_params(self, delivery_params, local_fs):
@@ -86,6 +94,7 @@ class SvnDeliveryChannel(object):
         :param delivery_params: parsed delivery parms
         :param local_fs: TODO who is that
         """
+        logging.info("Starting save_delivery_params")
         source_branch = self._check_svn_url(delivery_params["mf_source_svn"])
         tag_url = self._check_svn_url(delivery_params["mf_tag_svn"])
         gav = ":".join(delivery_params[key] for key in
@@ -122,6 +131,7 @@ class SvnDeliveryChannel(object):
                 configobj.write(info_file)
             self.svn_client.add(os.path.join(temp_dir, self.params_file_path))
             self.svn_client.copy(temp_dir, tag_url)
+        logging.info("Completed save_delivery_params")
 
     def _checkout_nested_dir(self, local_svn_root, dir_path):
         """
@@ -129,10 +139,12 @@ class SvnDeliveryChannel(object):
         :param local_svn_root
         :param dir_path: target dir
         """
+        logging.info("Starting _checkout_nested_dir with dir_path=%s", dir_path)
         path_elements = dir_path.split(os.sep)
         dirs_sequence = [os.sep.join(path_elements[:limit]) for limit in range(1, len(path_elements) + 1)]
         for path in dirs_sequence:
             self.svn_client.update(os.path.join(local_svn_root, path), depth=pysvn.depth.immediates)
+        logging.info("Completed _checkout_nested_dir")
 
 
 class CiSvnDeliveryChannel(object):
@@ -148,15 +160,22 @@ class CiSvnDeliveryChannel(object):
         self.build_job = build_job
 
     def read_delivery_params(self, country, client, gav):
-        return self.svn_channel.read_delivery_params(country, client, gav)
+        logging.info("Starting read_delivery_params in CiSvnDeliveryChannel")
+        result = self.svn_channel.read_delivery_params(country, client, gav)
+        logging.info("Completed read_delivery_params in CiSvnDeliveryChannel")
+        return result
 
     def save_delivery_params(self, delivery_params, local_fs):
+        logging.info("Starting save_delivery_params in CiSvnDeliveryChannel")
         self.svn_channel.save_delivery_params(delivery_params, local_fs)
         tag_url = delivery_params["mf_tag_svn"]
         client_code = delivery_params["groupid"].split(".")[-1]
         try:
-            return self.jenkins_client.run_job(self.build_job, {"tag_url": tag_url,
-                                                                "client": client_code})
+            result = self.jenkins_client.run_job(self.build_job, {"tag_url": tag_url,
+                                                                  "client": client_code})
+            logging.info("Completed save_delivery_params in CiSvnDeliveryChannel")
+            return result
+
         except JenkinsError:
             raise ChannelError("Unable to start build for %s" % tag_url)
 
@@ -169,10 +188,12 @@ class AmqpDeliveryChannel(object):
         self.svn_channel = svn_channel
 
     def build_delivery_from_tag(self, delivery_params, local_fs, amqp_client):
+        logging.info("Starting build_delivery_from_tag")
         self.svn_channel.save_delivery_params(delivery_params, local_fs)
         tag_url = delivery_params["mf_tag_svn"]
         try:
             amqp_client.build_delivery(tag_url)
+            logging.info("Completed build_delivery_from_tag")
         except pika.exceptions.ConnectionClosed:
             raise ChannelError("Unable to start build for %s" % tag_url)
 
