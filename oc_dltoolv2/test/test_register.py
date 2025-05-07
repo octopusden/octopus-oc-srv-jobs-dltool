@@ -61,7 +61,7 @@ class ContentRegistrationTestSuite(RegisterTestCase):
 
     def test_missing_delivery_rejected(self):
         mock_fs = MemoryFS()
-        with self.assertRaisesRegexp(RegisterError, "not found"):
+        with self.assertRaisesRegex(RegisterError, "not found"):
             register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
                                       ContentRegistrationTestSuite.MockRegistrationClient())
 
