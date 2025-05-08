@@ -8,6 +8,7 @@ from oc_logging.Logging import setup_logging
 class DLBuildWorker(DLBuildQueueServer):
 
     def __init__(self, *args, **kwargs):
+        setup_logging()
         self.mail_config_file = None
         self._kwargs = kwargs.copy()
         kwargs.pop('setup_orm', False)
@@ -56,6 +57,5 @@ class DLBuildWorker(DLBuildQueueServer):
 
 
 if __name__ == '__main__':
-    setup_logging()
     logging.debug("Starting DLBuildWorker main loop")
     exit(DLBuildWorker().main())
