@@ -61,7 +61,7 @@ class AutoSetupNotificator(object):
         self.smtp_client = conn_mgr.get_smtp_connection()
         mail_from = '@'.join([smtp_user, os.getenv("MAIL_DOMAIN") ])
 
-        mailer = Mailer(self.smtp_client, mail_from, config_path=self.mail_config_file)
+        mailer = Mailer(self.smtp_client, mail_from, config_path=self.mail_config_file, template_type="html")
 
         portal_url = conn_mgr.get_url("DELIVERY_PORTAL")
         notificator = Notificator(mailer, portal_url, None)
