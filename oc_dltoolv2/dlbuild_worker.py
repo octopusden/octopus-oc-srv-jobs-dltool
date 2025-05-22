@@ -22,25 +22,32 @@ class DLBuildWorker(DLBuildQueueServer):
         while True:
             tag = None
             ds = self.pgq.new_msg_from_queue('cdt.dlbuild.input')
-            if ds:
-                msg, msg_id = ds
-                logging.debug('new_msg_from_queue id [%s] is [%s]' % (msg_id, msg) )
-                try:
-                    tag = msg[1][0]
-                except:
-                    logging.error('inconsistent message in queue')
-                if tag:
-                    logging.debug('fetched tag: [%s]' % tag)
-                    process_status, err_message = self.try_build_delivery(tag, msg_id)
-                    if process_status:
-                        logging.info('process status: [%s]' % process_status)
-                        logging.info('err message: [%s]' % err_message)
-                        self.finish_msg_prc(msg_id, process_status, err_message)
-                    else:
-                        logging.error('No process status returned, assuming message [%s] is marked as failed' % msg_id)
-            else:
+            if not ds:
                 logging.debug('No new messages, sleeping [%s] seconds' % self.sleep)
-            time.sleep(int(self.sleep))
+                time.sleep(int(self.sleep))
+                continue
+
+            msg, msg_id = ds
+            logging.debug('new_msg_from_queue id [%s] is [%s]' % (msg_id, msg) )
+
+            try:
+                tag = msg[1][0]
+            except:
+                logging.error('inconsistent message [%s] in queue' % msg)
+                continue
+
+            if not tag:
+                logging_error('failed to fetch tag from message [%s]' % msg)
+                continue
+
+            logging.debug('fetched tag: [%s]' % tag)
+            process_status, err_message = self.try_build_delivery(tag, msg_id)
+            if process_status:
+                logging.info('process status: [%s]' % process_status)
+                logging.info('err message: [%s]' % err_message)
+                self.finish_msg_prc(msg_id, process_status, err_message)
+            else:
+                logging.error('No process status returned, assuming message [%s] is marked as failed' % msg_id)
 
     def finish_msg_prc(self, msg_id, process_status, err_message):
         logging.debug('reached finish_msg_prc')
@@ -59,7 +66,7 @@ class DLBuildWorker(DLBuildQueueServer):
             process_status, err_message = self.build_delivery(tag)
         except Exception as e:
             logging.exception('Delivery build failed: %s' % e)
-            self.pgq.msg_proc_failed(msg_id, error_message=str(e))
+            self.pgq.msg_proc_fail(msg_id, error_message=str(e))
         return process_status, err_message
 
     def __init__(self, *args, **kwargs):
