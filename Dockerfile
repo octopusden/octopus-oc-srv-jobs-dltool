@@ -21,4 +21,5 @@ WORKDIR /build
 RUN python3 -m pip install $(pwd) && \
     python3 -m unittest discover -v && \
     python3 setup.py bdist_wheel
-ENTRYPOINT ["env", "python3", "-m", "oc_dltoolv2"]
+#CMD tail -f /dev/null
+ENTRYPOINT ["env", "python3", "-m", "oc_dltoolv2", "-vvv"]

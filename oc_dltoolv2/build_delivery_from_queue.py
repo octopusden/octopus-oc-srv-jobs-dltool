@@ -19,6 +19,7 @@ from .delivery_artifacts_checker import DeliveryArtifactsChecker
 class BuildProcess(object):
 
     def __init__(self, *args, **kvargs):
+        logging.debug('Reached BuildProcess.__init__')
         self.conn_mgr = kvargs.pop('conn_mgr', ConnectionManager())
         self.setup_orm = kvargs.pop('setup_orm', True)
         self.mail_config_file = kvargs.pop('mail_config_file', None)
