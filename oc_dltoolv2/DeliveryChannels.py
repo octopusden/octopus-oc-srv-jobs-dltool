@@ -73,6 +73,9 @@ class SvnDeliveryChannel(object):
         :param url: url to read parms from
         :return: dict of delivery attributes (keys are equal to db model fields)
         """
+        logging.debug('Reached read_delivery_at_branch')
+        logging.debug('url = [%s]' % url)
+        logging.debug('self.svn_client = [%s]' % self.svn_client)
         logging.info("Starting read_delivery_at_branch with url=%s", url)
         branch_fs = SvnFS(url, self.svn_client)
         if not url.startswith(self.clients_repo_url):
