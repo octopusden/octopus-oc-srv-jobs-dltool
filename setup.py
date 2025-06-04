@@ -2,7 +2,7 @@ from setuptools import setup
 
 included_packages = ["oc_dltoolv2"]
 
-__version = '4.0.5'
+__version = '4.0.6'
 
 spec = { "name": "oc-dltool",
          "version": __version,
@@ -11,6 +11,7 @@ spec = { "name": "oc-dltool",
          "long_description_content_type": "text/plain",
          "python_requires": ">=3.6",
          "install_requires": [
+           "oc-cdtapi>=3.18.3",
            "oc-checksumsq",
            "oc-connections",
            "oc-cdt-queue2",
