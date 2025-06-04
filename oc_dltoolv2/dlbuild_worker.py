@@ -98,7 +98,7 @@ class DLBuildWorker(DLBuildQueueServer):
         exit_status = None
         exit_message = None
         for process_status in process_status_list:
-            if process_status.process == 'build_process':
+            if process_status.process != 'notify_client':
                 exit_status = process_status.status
                 exit_message = process_status.errmsg
             message = "Subprocess \"%s\" finished with status %s" % (process_status.process, process_status.status)
