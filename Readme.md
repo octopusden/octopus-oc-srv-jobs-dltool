@@ -52,4 +52,4 @@ Most of them are done via environment variables and several only can be re-defin
 - *COUNTERPARTY\_ENABLED* - enable or disable client counterparty functionality for Release Notes and Documentation appending. Default: `"False"`      
 - *CLIENT\_PROVIDER\_URL* - *URL* for *Client Provider* microservice. Mandatory if *COUNTERPARTY\_ENABLED* is set to `"True"`
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`
-- *MSG\_SOURCE* - message source, should be either *amqp* for rabbitmq or *db* for postgres
+- *MSG\_SOURCE* - message source, should be either `amqp` for rabbitmq or `db` for postgres
