@@ -1,7 +1,7 @@
 # Delivery Builder Worker.
 
 ## Proceeding principles.
-- Listens to *cdt.dlbuild.input* queue for build requests. Queue may be re-defined.
+- Listens to *cdt.dlbuild.input* queue or checks queue\_message in postgres for build requests. Queue may be re-defined.
 - Gets delivery data from *Subversion* link specified in the request.
 - Builds delivery using *Subversion* and *Maven* sources.
 - Registers files used for build in delivery database by means of queue requests (*cdt.dlcontents.input/cdt.dlartifacts.input*)
@@ -39,6 +39,9 @@ Most of them are done via environment variables and several only can be re-defin
 - *MVN\_PREFIX* - *GroupID* prefix for packed delivery *GAV*.
 - *MVN\_RN\_SUFFIX* - Release Notes *GroupID* suffix for *GAV*. Necessary for Release Notes auto-append.
 - *MVN\_DOC\_SUFFIX* - Documentation *GroupID* suffix for *GAV*. Necessary for Documentation auto-append.
+- *PSQL\_MQ\_URL* - postgres url for mq scheme
+- *PSQL\_MQ\_USER* - postgres username for mq scheme
+- *PSQL\_MQ\_PASSWORD* - postgres password for mq scheme
 - *DELIVERY\_PORTAL\_URL* - URL for delivery-tool web-interface to see delivery information, used for e-mail notification.
 - *PORTAL\_RELEASE\_NOTES\_ENABLED* - enable or disable appending *Release Notes*. Default: `"False"`
 - *DISTRIBUTIVES\_API\_CHECK\_ENABLED* - enable or disable check if distributives included to the delivery are deliverable. Default: `"False"`
@@ -49,3 +52,4 @@ Most of them are done via environment variables and several only can be re-defin
 - *COUNTERPARTY\_ENABLED* - enable or disable client counterparty functionality for Release Notes and Documentation appending. Default: `"False"`      
 - *CLIENT\_PROVIDER\_URL* - *URL* for *Client Provider* microservice. Mandatory if *COUNTERPARTY\_ENABLED* is set to `"True"`
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`
+- *MSG\_SOURCE* - message source, should be either `amqp` for rabbitmq or `db` for postgres
