@@ -1,7 +1,7 @@
 from . import django_settings
 
 from io import BytesIO
-
+from unittest.mock import patch, MagicMock
 from oc_cdtapi import NexusAPI
 from oc_delivery_apps.checksums.models import CiTypes, CsTypes, LocTypes, CiRegExp
 from oc_checksumsq.checksums_interface import FileLocation
@@ -51,8 +51,10 @@ class ContentRegistrationTestSuite(RegisterTestCase):
             if not hasattr(self, "calls"):
                 self.calls = []
             self.calls.append((file_location, citype_code, depth))
-
-    def test_empty_file_rejected(self):
+    
+    @patch('register_delivery_content.PgQAPI.psycopg2.connect')
+    def test_empty_file_rejected(self, mock_connect):
+        mock_connect.return_value = MagicMock()
         mock_fs = MemoryFS()
         mock_fs.create(u"foo.zip")
         with self.assertRaisesRegex(RegisterError, "empty"):

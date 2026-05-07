@@ -6,13 +6,18 @@ USER root
 
 RUN apt-get --quiet --assume-yes update && \
     apt-get --no-install-recommends --quiet --assume-yes install \
+        python3-venv \
         python3-pysvn \
         python3-pip \
         python3-dev \
         libpq-dev \
         build-essential \
         libmagic1 && \
-    python3 -m pip install --upgrade pip && \
+    python3 -m venv /local/venv --system-site-packages
+
+ENV PATH="/local/venv/bin:$PATH"
+
+RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install --upgrade setuptools wheel
 
 RUN rm -rf /build
