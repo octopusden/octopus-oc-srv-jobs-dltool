@@ -61,7 +61,7 @@ def register_delivery_content(local_fs, archive_path, gav, registration_client):
             raise RegisterError("File %s for %s is empty" % (archive_path, gav_str))
         file_location = FileLocation(gav_str, "NXS", None)
         logging.debug("Registering file with location: %s", file_location)
-        msg = pgq.compose_any_message('register_file', list(file_location), 'DELIVERY', 1))
+        msg = pgq.compose_any_message('register_file', list(file_location), 'DELIVERY', 1)
         pgq.enqueue_message('cdt.dlartifacts.input', msg)
         registration_client.register_file(file_location, "DELIVERY", 1)
         logging.info("Registered delivery content for GAV: %s", gav_str)
