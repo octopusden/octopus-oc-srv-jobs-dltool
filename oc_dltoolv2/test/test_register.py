@@ -1,7 +1,7 @@
 from . import django_settings
 
 from io import BytesIO
-
+from unittest.mock import patch, MagicMock
 from oc_cdtapi import NexusAPI
 from oc_delivery_apps.checksums.models import CiTypes, CsTypes, LocTypes, CiRegExp
 from oc_checksumsq.checksums_interface import FileLocation
@@ -9,7 +9,7 @@ from django import test
 from fs.memoryfs import MemoryFS
 from fs.zipfs import ZipFS
 
-from ..register import register_delivery_content, register_delivery_resource, RegisterError
+from .. import register
 from ..resources import DeliveryResource, LocationStub, ResourceData
 
 import django
@@ -29,6 +29,9 @@ class RegisterTestCase(test.TransactionTestCase):
         CiTypes.objects.get_or_create(code="DELIVERY", name="Client delivery",
                                       is_standard="N", is_deliverable=True)
         LocTypes.objects.get_or_create(code="NXS", name="Nexus")
+        _ptch = patch.object(register, "PgQAPI")
+        self._pgq = _ptch.start()
+        self.addCleanup(_ptch.stop)
 
     def tearDown(self):
         django.core.management.call_command('flush', verbosity=0, interactive=False)
@@ -51,24 +54,24 @@ class ContentRegistrationTestSuite(RegisterTestCase):
             if not hasattr(self, "calls"):
                 self.calls = []
             self.calls.append((file_location, citype_code, depth))
-
+    
     def test_empty_file_rejected(self):
         mock_fs = MemoryFS()
         mock_fs.create(u"foo.zip")
-        with self.assertRaisesRegex(RegisterError, "empty"):
-            register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
+        with self.assertRaisesRegex(register.RegisterError, "empty"):
+            register.register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
                                       ContentRegistrationTestSuite.MockRegistrationClient())
 
     def test_missing_delivery_rejected(self):
         mock_fs = MemoryFS()
-        with self.assertRaisesRegex(RegisterError, "not found"):
-            register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
+        with self.assertRaisesRegex(register.RegisterError, "not found"):
+            register.register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
                                       ContentRegistrationTestSuite.MockRegistrationClient())
 
     def test_archive_registered(self):
         mock_fs = self._get_archive_fs()
         registration_client = ContentRegistrationTestSuite.MockRegistrationClient()
-        register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
+        register.register_delivery_content(mock_fs, "foo.zip", NexusAPI.parse_gav("g:a:v"),
                                   registration_client)
 
         expected_params = [(("g:a:v:zip", "NXS", None), "DELIVERY", 1), ]
@@ -100,7 +103,7 @@ class SourceRegisterTestSuite(RegisterTestCase):
         resource = DeliveryResource(location, TestResourceData())
 
         registration_client = SourceRegisterTestSuite.MockRegistrationClient()
-        register_delivery_resource(resource, registration_client, None)
+        register.register_delivery_resource(resource, registration_client, None)
 
         file_location = FileLocation(location.path, location.location_type.code, location.revision)
         expected_params = [(file_location, "9a0364b9e99bb480dd25e1f0284c8555", "FOO"), ]
@@ -112,7 +115,7 @@ class SourceRegisterTestSuite(RegisterTestCase):
         resource = DeliveryResource(location, TestResourceData())
 
         registration_client = SourceRegisterTestSuite.MockRegistrationClient()
-        register_delivery_resource(resource, registration_client, [{"path": location.path, "checksum": "9a0364b9e99bb480dd25e1f0284c8555"}])
+        register.register_delivery_resource(resource, registration_client, [{"path": location.path, "checksum": "9a0364b9e99bb480dd25e1f0284c8555"}])
 
         file_location = FileLocation(location.path, location.location_type.code, location.revision)
         expected_params = [(file_location, "9a0364b9e99bb480dd25e1f0284c8555", "FOO"), ]
