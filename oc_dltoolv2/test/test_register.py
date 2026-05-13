@@ -10,7 +10,6 @@ from fs.memoryfs import MemoryFS
 from fs.zipfs import ZipFS
 
 from .. import register
-# import register.register_delivery_content, register.register_delivery_resource, register.RegisterError
 from ..resources import DeliveryResource, LocationStub, ResourceData
 
 import django
