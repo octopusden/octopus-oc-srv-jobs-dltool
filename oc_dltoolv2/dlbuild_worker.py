@@ -137,6 +137,9 @@ class DLBuildWorker(DLBuildQueueServer):
         parser.add_argument("--msg_target", dest="msg_target", help="The target for messages - amqp or db", default=os.getenv("MSG_TARGET"))
         parser.add_argument("--sleep", dest="sleep", help="Seconds between new messages queries", default="10")
 
+        if args.msg_target:
+            os.environ['MSG_TARGET'] = args.msg_target
+
     def prepare_parser(self):
         logging.debug('Reached DLBuildWorker.prepare_parser')
         return argparse.ArgumentParser(description='Delivery build worker')
