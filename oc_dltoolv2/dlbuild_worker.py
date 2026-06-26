@@ -130,6 +130,9 @@ class DLBuildWorker(DLBuildQueueServer):
             self.connect = self.custom_connect
             self.run = self.custom_run
 
+        if args.msg_target:
+            os.environ['MSG_TARGET'] = args.msg_target
+
     def custom_args(self, parser):
         logging.debug('Reached DLBuildWorker.custom_args')
         parser.add_argument("--mail-config-file", dest="mail_config_file", help="Mailer configuration file", default=os.getenv("MAIL_CONFIG_FILE"))
@@ -137,8 +140,6 @@ class DLBuildWorker(DLBuildQueueServer):
         parser.add_argument("--msg_target", dest="msg_target", help="The target for messages - amqp or db")
         parser.add_argument("--sleep", dest="sleep", help="Seconds between new messages queries", default="10")
 
-        if args.msg_target:
-            os.environ['MSG_TARGET'] = args.msg_target
 
     def prepare_parser(self):
         logging.debug('Reached DLBuildWorker.prepare_parser')
