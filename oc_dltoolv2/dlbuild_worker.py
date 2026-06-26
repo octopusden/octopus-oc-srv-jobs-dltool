@@ -134,7 +134,7 @@ class DLBuildWorker(DLBuildQueueServer):
         logging.debug('Reached DLBuildWorker.custom_args')
         parser.add_argument("--mail-config-file", dest="mail_config_file", help="Mailer configuration file", default=os.getenv("MAIL_CONFIG_FILE"))
         parser.add_argument("--msg_source", dest="msg_source", help="The source of messages - amqp or db", default=os.getenv("MSG_SOURCE"))
-        parser.add_argument("--msg_target", dest="msg_target", help="The target for messages - amqp or db", default=os.getenv("MSG_TARGET"))
+        parser.add_argument("--msg_target", dest="msg_target", help="The target for messages - amqp or db")
         parser.add_argument("--sleep", dest="sleep", help="Seconds between new messages queries", default="10")
 
         if args.msg_target:
