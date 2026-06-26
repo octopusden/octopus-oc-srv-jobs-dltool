@@ -53,3 +53,4 @@ Most of them are done via environment variables and several only can be re-defin
 - *CLIENT\_PROVIDER\_URL* - *URL* for *Client Provider* microservice. Mandatory if *COUNTERPARTY\_ENABLED* is set to `"True"`
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`
 - *MSG\_SOURCE* - message source, should be either `amqp` for rabbitmq or `db` for postgres
+- *MSG\_TARGET* - message target, should be either `amqp` for rabbitmq or `db` for postgres
