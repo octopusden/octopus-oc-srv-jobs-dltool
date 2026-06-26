@@ -1,4 +1,5 @@
 import logging
+import os
 from hashlib import md5
 
 from oc_checksumsq.checksums_interface import FileLocation
@@ -40,9 +41,13 @@ def register_delivery_resource(resource, registration_client, checksums_list):
 
     file_location = FileLocation(location_stub.path, location_stub.location_type.code, location_stub.revision)
     logging.debug("Registering checksum for file location: %s", file_location)
-    msg = pgq.compose_any_message('register_checksum', list(file_location), checksum, citype=location_stub.citype.code)
-    pgq.enqueue_message('cdt.dlcontents.input', msg)
-    registration_client.register_checksum(file_location, checksum, citype=location_stub.citype.code)
+    if os.getenv('MSG_TARGET') == 'db':
+        logging.debug('Sending message to postgres')
+        msg = pgq.compose_any_message('register_checksum', list(file_location), checksum, citype=location_stub.citype.code)
+        pgq.enqueue_message('cdt.dlcontents.input', msg)
+    else:
+        logging.debug('Sending message to rabbitmq')
+        registration_client.register_checksum(file_location, checksum, citype=location_stub.citype.code)
     logging.info("Registered checksum for resource: %s", location_stub.path)
 
 def register_delivery_content(local_fs, archive_path, gav, registration_client):
@@ -61,9 +66,13 @@ def register_delivery_content(local_fs, archive_path, gav, registration_client):
             raise RegisterError("File %s for %s is empty" % (archive_path, gav_str))
         file_location = FileLocation(gav_str, "NXS", None)
         logging.debug("Registering file with location: %s", file_location)
-        msg = pgq.compose_any_message('register_file', list(file_location), 'DELIVERY', 1)
-        pgq.enqueue_message('cdt.dlartifacts.input', msg)
-        registration_client.register_file(file_location, "DELIVERY", 1)
+        if os.getenv('MSG_TARGET') == 'db':
+            logging.debug('Sending message to postgres')
+            msg = pgq.compose_any_message('register_file', list(file_location), 'DELIVERY', 1)
+            pgq.enqueue_message('cdt.dlartifacts.input', msg)
+        else:
+            logging.debug('Sending message to rabbitmq')
+            registration_client.register_file(file_location, "DELIVERY", 1)
         logging.info("Registered delivery content for GAV: %s", gav_str)
     except ResourceNotFound:
         logging.error("File %s not found for %s", archive_path, gav_str)
