@@ -4,7 +4,29 @@ import os
 import time
 from oc_dlinterface.dlbuild_worker_interface import DLBuildQueueServer
 from oc_logging.Logging import setup_logging
-from oc_cdtapi import PgQAPI
+from oc_cdtapi import PgQAPI, VaultAPI
+
+
+VAULT_CREDENTIALS = ["PSQL", "PSQL_MQ", "AMQP", "MVN", "SVN", "SVN_CLIENTS", "SMTP"]
+
+def load_vault_credentials():
+    """
+    Fill missing credential environment variables from Vault path <NAME>, key URL/USER/PASSWORD.
+    A variable that is already set always wins over Vault.
+    """
+    vault_api = VaultAPI.VaultAPI()
+    for name in VAULT_CREDENTIALS:
+        for key in ["URL", "USER", "PASSWORD"]:
+            env_name = "%s_%s" % (name, key)
+            if os.getenv(env_name):
+                continue
+
+            value = vault_api.load_secret("%s__%s" % (name, key))
+            if value is None:
+                logging.warning('[%s] is not set in the environment or in Vault' % env_name)
+                continue
+
+            os.environ[env_name] = str(value)
 
 
 class DLBuildWorker(DLBuildQueueServer):
@@ -71,6 +93,7 @@ class DLBuildWorker(DLBuildQueueServer):
 
     def __init__(self, *args, **kwargs):
         setup_logging()
+        load_vault_credentials()
         self.mail_config_file = None
         self.msg_source = None
         self._kwargs = kwargs.copy()

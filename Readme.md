@@ -54,3 +54,11 @@ Most of them are done via environment variables and several only can be re-defin
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`
 - *MSG\_SOURCE* - message source, should be either `amqp` for rabbitmq or `db` for postgres
 - *MSG\_TARGET* - message target, should be either `amqp` for rabbitmq or `db` for postgres
+
+### Credentials from Vault
+
+The *URL*, *USER* and *PASSWORD* of *PSQL*, *PSQL\_MQ*, *AMQP*, *MVN*, *SVN*, *SVN\_CLIENTS* and *SMTP* may also come from *Vault*. A value set in the environment always wins; only missing ones are read from Vault path `<NAME>`, key `URL`, `USER` or `PASSWORD` (e.g. *MVN\_PASSWORD* from path `MVN`, key `PASSWORD`).
+
+- *VAULT\_URL* - *Vault* server URL. Vault is skipped when it is not set.
+- *VAULT\_TOKEN* - token to read the secrets with.
+- *VAULT\_MOUNT\_POINT* - *KV* secrets engine mount point.
