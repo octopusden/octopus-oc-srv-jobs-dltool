@@ -16,6 +16,19 @@ from .distributives_api_client import DistributivesAPIClient
 from .delivery_artifacts_checker import DeliveryArtifactsChecker
 
 
+def get_clients_repo_url(svn_url):
+    """
+    Build URL of clients-related SubVersion repository
+    :param svn_url: SubVersion server URL, the same as for all other SVN operations
+    :return: svn_url with SVN_CLIENTS_REPO appended
+    """
+    clients_repo = os.getenv("SVN_CLIENTS_REPO")
+    if not clients_repo:
+        raise ValueError("'SVN_CLIENTS_REPO' is mandatory")
+
+    return "/".join([svn_url.rstrip("/"), clients_repo.strip("/")])
+
+
 class BuildProcess(object):
 
     def __init__(self, *args, **kvargs):
@@ -59,7 +72,7 @@ class BuildProcess(object):
         :param tag: URL of tag to read
         :return: dict of delivery attributes (keys are equal to db model fields) """
         logging.info("Starting to retrieve delivery parameters from tag: %s", tag)
-        clients_repo = self.conn_mgr.get_url("SVN_CLIENTS")
+        clients_repo = get_clients_repo_url(self.conn_mgr.get_url("SVN"))
         channel = self._DeliveryChannels.SvnDeliveryChannel(
             clients_repo, self.conn_mgr.get_svn_client("SVN"))
         delivery_params = channel.read_delivery_at_branch(tag)
