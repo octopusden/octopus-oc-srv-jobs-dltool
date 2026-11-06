@@ -7,7 +7,7 @@ from oc_logging.Logging import setup_logging
 from oc_cdtapi import PgQAPI, VaultAPI
 
 
-VAULT_CREDENTIALS = ["PSQL", "PSQL_MQ", "AMQP", "MVN", "SVN", "SVN_CLIENTS", "SMTP"]
+VAULT_CREDENTIALS = ["PSQL", "PSQL_MQ", "AMQP", "MVN", "SVN", "SMTP"]
 
 def load_vault_credentials():
     """

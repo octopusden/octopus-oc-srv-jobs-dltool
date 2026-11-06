@@ -37,6 +37,6 @@ class LoadVaultCredentialsTestSuite(unittest.TestCase):
         vault_api.return_value.load_secret.return_value = None
         load_vault_credentials()
         asked = [_call.args[0] for _call in vault_api.return_value.load_secret.call_args_list]
-        for name in ["PSQL", "PSQL_MQ", "AMQP", "MVN", "SVN", "SVN_CLIENTS", "SMTP"]:
+        for name in ["PSQL", "PSQL_MQ", "AMQP", "MVN", "SVN", "SMTP"]:
             for key in ["URL", "USER", "PASSWORD"]:
                 self.assertIn("%s__%s" % (name, key), asked)
