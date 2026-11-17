@@ -166,6 +166,8 @@ class BuildProcess(object):
             except Exception as e:
                 logging.exception(e)
                 return ProcessStatus("registration_process", "FAILED", repr(e), e)
+        else:
+            registration_client = None
 
         logging.info("Registering delivery resources")
         for resource in resources:
