@@ -11,7 +11,7 @@ spec = { "name": "oc-dltool",
          "long_description_content_type": "text/plain",
          "python_requires": ">=3.6",
          "install_requires": [
-           "oc-cdtapi>=3.18.3",
+           "oc-cdtapi>=3.33.7",
            "oc-checksumsq",
            "oc-connections",
            "oc-cdt-queue2>=4.1.3",

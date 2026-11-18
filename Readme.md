@@ -32,7 +32,8 @@ Most of them are done via environment variables and several only can be re-defin
 - *PSQL\_URL*, *PSQL\_USER*, *PSQL\_PASSWORD* - credentials for *PostgerSQL* database connection, used for *Django* models. *PSQL_URL* should contan database schema as a parameter. Format: `{hostFQDN}:{port}/{instance}?search_path={schema}`
 - *AMQP\_URL*, *AMQP\_USER*, *AMQP\_PASSWORD* - credentials for queue connection (*RabbitMQ* or other *AMQP* implementation)
 - *SMTP\_URL*, *SMTP\_USER*, *SMTP\_PASSWORD* - credentials for mail server *SMTP* protocol - to send an e-mail notifications to delivery authors about delivery being ready.
-- *SVN\_CLIENTS\_URL*, *SVN\_CLIENTS\_USER*, *SVN\_CLIENTS\_PASSWORD* - credentials for SubVersion section of clients-related data.
+- *SVN\_URL*, *SVN\_USER*, *SVN\_PASSWORD* - credentials for *SubVersion* server connection.
+- *SVN\_CLIENTS\_REPO* - *SubVersion* repository with clients-related data, relative to *SVN\_URL* (e.g. `test_02`).
 - *MVN\_URL*, *MVN\_USER*, *MVN\_PASSWORD* - credentials for maven-like repository connection (*Sontatype Nexus* and *JFrog Artifactory* are currently supported only)
 - *MVN\_DOWNLOAD\_REPO* - *Maven* repository to download delivery components from
 - *MVN\_UPLOAD\_REPO* - *Maven* repository to upload packed deliveries to
@@ -54,3 +55,11 @@ Most of them are done via environment variables and several only can be re-defin
 - *DELIVERY\_ADD\_ARTS\_PATH* - Additional *JSON*ized setting path. Used for appending *Copyright* files if necessary. Useless if *COUNTERPARTY\_ENABLED* is `"False"`
 - *MSG\_SOURCE* - message source, should be either `amqp` for rabbitmq or `db` for postgres
 - *MSG\_TARGET* - message target, should be either `amqp` for rabbitmq or `db` for postgres
+
+### Credentials from Vault
+
+The *URL*, *USER* and *PASSWORD* of *PSQL*, *PSQL\_MQ*, *AMQP*, *MVN*, *SVN* and *SMTP* may also come from *Vault*. A value set in the environment always wins; only missing ones are read from Vault path `<NAME>`, key `URL`, `USER` or `PASSWORD` (e.g. *MVN\_PASSWORD* from path `MVN`, key `PASSWORD`).
+
+- *VAULT\_URL* - *Vault* server URL. Vault is skipped when it is not set.
+- *VAULT\_TOKEN* - token to read the secrets with.
+- *VAULT\_MOUNT\_POINT* - *KV* secrets engine mount point.
