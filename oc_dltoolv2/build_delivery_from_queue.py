@@ -3,6 +3,7 @@ import os
 from collections import namedtuple
 
 from oc_cdtapi.NexusAPI import parse_gav
+from oc_cdtapi import PgQAPI
 from oc_connections.ConnectionManager import ConnectionManager
 
 from oc_orm_initializator.orm_initializator import OrmInitializator
@@ -149,28 +150,33 @@ class BuildProcess(object):
 
     def registration_process(self, delivery, resources, workdir_fs, archive_path, gav, checksums_list):
         from .register import register_delivery_content, register_delivery_resource
-        registration_client = oc_checksumsq.checksums_interface.ChecksumsQueueClient()
-        registration_client.setup(
-                url=os.getenv("AMQP_URL"),
-                username=os.getenv("AMQP_USER"),
-                password=os.getenv("AMQP_PASSWORD"),
-                routing_key=oc_checksumsq.checksums_interface.queue_name,
-                queue_cnt=oc_checksumsq.checksums_interface.queue_cnt_name,
-                priority=3)
-        logging.info("Connecting to registration queue")
-        try:
-            registration_client.connect()  # should be called just before sending message
+        msg_target = os.getenv('MSG_TARGET')
+        if msg_target == 'amqp':
+            registration_client = oc_checksumsq.checksums_interface.ChecksumsQueueClient()
+            registration_client.setup(
+                    url=os.getenv("AMQP_URL"),
+                    username=os.getenv("AMQP_USER"),
+                    password=os.getenv("AMQP_PASSWORD"),
+                    routing_key=oc_checksumsq.checksums_interface.queue_name,
+                    queue_cnt=oc_checksumsq.checksums_interface.queue_cnt_name,
+                    priority=3)
+            logging.info("Connecting to registration queue")
+            try:
+                registration_client.connect()  # should be called just before sending message
+            except Exception as e:
+                logging.exception(e)
+                return ProcessStatus("registration_process", "FAILED", repr(e), e)
+        else:
+            registration_client = None
 
-            logging.info("Registering delivery resources")
-            for resource in resources:
-                register_delivery_resource(resource, registration_client, checksums_list)
+        logging.info("Registering delivery resources")
+        for resource in resources:
+            register_delivery_resource(resource, registration_client, checksums_list)
 
-            logging.info("Registering delivery content")
-            register_delivery_content(workdir_fs, archive_path, gav, registration_client)
+        logging.info("Registering delivery content")
+        register_delivery_content(workdir_fs, archive_path, gav, registration_client)
+        if msg_target == 'amqp':
             registration_client.disconnect()
-        except Exception as e:
-            logging.exception(e)
-            return ProcessStatus("registration_process", "FAILED", repr(e), e)
 
         logging.info("Checksums were computed for GAV: '%s'" % delivery.gav)
         return ProcessStatus("registration_process", "OK", "", None)
